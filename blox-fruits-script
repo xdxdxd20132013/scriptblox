@@ -1,0 +1,89 @@
+-- 1. СТВОРЕННЯ ТАБЛИЦІ НАЛАШТУВАНЬ (Щоб код був акуратним)
+local Config = {
+    ChestFarm = false,
+    AutoClick = false,
+    FlyMode = false,
+    ChestSpeed = 350
+}
+
+local Player = game:GetService("Players").LocalPlayer
+
+-- 2. ГРАФІЧНИЙ ІНТЕРФЕЙС (Компактне меню)
+local ScreenGui = Instance.new("ScreenGui", Player:WaitForChild("PlayerGui"))
+ScreenGui.ResetOnSpawn = false
+
+local MainFrame = Instance.new("Frame", ScreenGui)
+MainFrame.Size = UDim2.new(0, 220, 0, 180)
+MainFrame.Position = UDim2.new(0.1, 0, 0.3, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+MainFrame.Active = true
+MainFrame.Draggable = true
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
+
+local Title = Instance.new("TextLabel", MainFrame)
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.Text = "My First Hub v1.0"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.BackgroundTransparency = 1
+
+-- Функція для швидкого створення кнопок (Заощаджує купу місця в коді!)
+local function CreateButton(text, yPos, callback)
+    local Btn = Instance.new("TextButton", MainFrame)
+    Btn.Size = UDim2.new(0.9, 0, 0, 30)
+    Btn.Position = UDim2.new(0.05, 0, 0, yPos)
+    Btn.Text = text
+    Btn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+    Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 5)
+    
+    Btn.MouseButton1Click:Connect(callback)
+    return Btn
+end
+
+-- 3. СТВОРЕННЯ КНОПОК ТА ЇХНЯ ЛОГІКА
+local ChestBtn; ChestBtn = CreateButton("Auto Chest: OFF", 40, function()
+    Config.ChestFarm = not Config.ChestFarm
+    ChestBtn.Text = "Auto Chest: " .. (Config.ChestFarm and "ON" or "OFF")
+end)
+
+local ClickBtn; ClickBtn = CreateButton("Auto Clicker: OFF", 80, function()
+    Config.AutoClick = not Config.AutoClick
+    ClickBtn.Text = "Auto Clicker: " .. (Config.AutoClick and "ON" or "OFF")
+end)
+
+local FlyBtn; FlyBtn = CreateButton("Fly Mode: OFF", 120, function()
+    Config.FlyMode = not Config.FlyMode
+    FlyBtn.Text = "Fly Mode: " .. (Config.FlyMode and "ON" or "OFF")
+end)
+
+-- 4. РОБОЧІ ФУНКЦІЇ ЧИТА (БЕКЕНД)
+
+-- Авто-клікер
+task.spawn(function()
+    while task.wait(0.1) do
+        if Config.AutoClick and Player.Character and Player.Character:FindFirstChildOfClass("Tool") then
+            Player.Character:FindFirstChildOfClass("Tool"):Activate()
+        end
+    end
+end)
+
+-- Політ
+task.spawn(function()
+    local bv, bg
+    while task.wait(0.1) do
+        local char = Player.Character
+        if Config.FlyMode and char and char:FindFirstChild("HumanoidRootPart") then
+            if not bv then
+                bv = Instance.new("BodyVelocity", char.HumanoidRootPart)
+                bv.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+                bg = Instance.new("BodyGyro", char.HumanoidRootPart)
+                bg.MaxTorque = Vector3.new(1e5, 1e5, 1e5)
+            end
+            bv.Velocity = char.Humanoid.MoveDirection * 100
+            bg.CFrame = workspace.CurrentCamera.CFrame
+        else
+            if bv then bv:Destroy() bv = nil end
+            if bg then bg:Destroy() bg = nil end
+        end
+    end
+end)
