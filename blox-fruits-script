@@ -414,4 +414,220 @@ ExitBtn.MouseButton1Click:Connect(function()
     end
     ScreenGui:Destroy()
 end)
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
 
+-- Перемикачі вкладок (Тепер 3 розділи)
+local CheatsTabBtn = Instance.new("TextButton")
+local VisualTabBtn = Instance.new("TextButton") -- Нова вкладка
+local SettingsTabBtn = Instance.new("TextButton")
+
+-- Контейнери для розділів
+local CheatsFrame = Instance.new("Frame")
+local VisualFrame = Instance.new("Frame") -- Новий контейнер
+local SettingsFrame = Instance.new("Frame")
+
+-- Елементи вкладки «Чіти»
+local ChestBtn = Instance.new("TextButton")
+local LevelBtn = Instance.new("TextButton")
+local FlyBtn = Instance.new("TextButton")
+
+-- Елементи вкладки «Візуал»
+local EspBtn = Instance.new("TextButton") -- Кнопка ESP
+
+-- Елементи вкладки «Налаштування»
+local SpeedTitle = Instance.new("TextLabel")
+local SpeedInput = Instance.new("TextBox")
+local SetSpeedBtn = Instance.new("TextButton")
+local ExitBtn = Instance.new("TextButton")
+
+local Player = game:GetService("Players").LocalPlayer
+ScreenGui.Parent = game:GetService("CoreGui") or Player:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
+
+-- ГОЛОВНЕ ВІКНО МЕНЮ
+MainFrame.Name = "BF_Xeno_Tabbed_Menu"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+MainFrame.Position = UDim2.new(0.05, 0, 0.3, 0)
+MainFrame.Size = UDim2.new(0, 240, 0, 230) -- Трохи розширив для трьох вкладок
+MainFrame.Active = true
+MainFrame.Draggable = true
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
+
+-- ЗАГОЛОВОК
+Title.Parent = MainFrame
+Title.BackgroundTransparency = 1
+Title.Size = UDim2.new(1, 0, 0, 25)
+Title.Text = "Blox Fruits Perfect [Xeno]"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 14
+Title.Font = Enum.Font.SourceSansBold
+
+local InfoTitle = Instance.new("TextLabel", MainFrame)
+InfoTitle.BackgroundTransparency = 1
+InfoTitle.Position = UDim2.new(0, 0, 0.09, 0)
+InfoTitle.Size = UDim2.new(1, 0, 0, 15)
+InfoTitle.Text = "[ Натисніть Left CTRL щоб згорнути ]"
+InfoTitle.TextColor3 = Color3.fromRGB(150, 150, 150)
+InfoTitle.TextSize = 11
+InfoTitle.Font = Enum.Font.SourceSansItalic
+
+-- СТИЛІЗАЦІЯ КНОПОК ПЕРЕМИКАННЯ ВКЛАДОК (Розділено на 3 рівні частини)
+local function styleTabSelect(btn, text, xPos)
+    btn.Parent = MainFrame
+    btn.Position = UDim2.new(xPos, 0, 0.18, 0)
+    btn.Size = UDim2.new(0.29, 0, 0, 26)
+    btn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    btn.Text = text
+    btn.TextColor3 = Color3.fromRGB(200, 200, 200)
+    btn.TextSize = 12
+    btn.Font = Enum.Font.SourceSansBold
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 5)
+end
+
+styleTabSelect(CheatsTabBtn, "⚔️ Чіти", 0.04)
+styleTabSelect(VisualTabBtn, "👁️ Візуал", 0.355)
+styleTabSelect(SettingsTabBtn, "⚙️ Налашт.", 0.67)
+CheatsTabBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55) -- Активна спочатку
+
+-- СТВОРЕННЯ КОНТЕЙНЕРІВ
+local function createTabFrame(f, name, visible)
+    f.Name = name
+    f.Parent = MainFrame
+    f.BackgroundTransparency = 1
+    f.Position = UDim2.new(0, 0, 0.32, 0)
+    f.Size = UDim2.new(1, 0, 0.68, 0)
+    f.Visible = visible
+end
+
+createTabFrame(CheatsFrame, "CheatsSection", true)
+createTabFrame(VisualFrame, "VisualSection", false)
+createTabFrame(SettingsFrame, "SettingsSection", false)
+
+-- ШАБЛОН КНОПОК
+local function styleButton(btn, parent, text, yPos, color)
+    btn.Parent = parent
+    btn.Position = UDim2.new(0.05, 0, yPos, 0)
+    btn.Size = UDim2.new(0.9, 0, 0, 30)
+    btn.BackgroundColor3 = color or Color3.fromRGB(45, 45, 55)
+    btn.Text = text
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.TextSize = 13
+    btn.Font = Enum.Font.SourceSans
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 5)
+end
+
+-- ЕЛЕМЕНТИ ВКЛАДКИ «ЧІТИ»
+styleButton(ChestBtn, CheatsFrame, "Auto Chest: OFF", 0.02)
+styleButton(LevelBtn, CheatsFrame, "Auto Level: OFF", 0.28)
+styleButton(FlyBtn, CheatsFrame, "Fly Mode: OFF", 0.54)
+
+-- ЕЛЕМЕНТИ ВКЛАДКИ «ВІЗУАЛ»
+styleButton(EspBtn, VisualFrame, "Player ESP: OFF", 0.02) -- Тільки кнопка, логіка нижче
+
+-- ЕЛЕМЕНТИ ВКЛАДКИ «НАЛАШТУВАННЯ»
+SpeedTitle.Parent = SettingsFrame
+SpeedTitle.BackgroundTransparency = 1
+SpeedTitle.Position = UDim2.new(0.05, 0, 0.02, 0)
+SpeedTitle.Size = UDim2.new(0.9, 0, 0, 18)
+SpeedTitle.Text = "Швидкість польоту:"
+SpeedTitle.TextColor3 = Color3.fromRGB(200, 200, 200)
+SpeedTitle.TextSize = 13
+SpeedTitle.TextXAlignment = Enum.TextXAlignment.Left
+SpeedTitle.Font = Enum.Font.SourceSans
+
+SpeedInput.Parent = SettingsFrame
+SpeedInput.Position = UDim2.new(0.05, 0, 0.16, 0)
+SpeedInput.Size = UDim2.new(0.42, 0, 0, 26)
+SpeedInput.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+SpeedInput.Text = "70"
+SpeedInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpeedInput.TextSize = 13
+Instance.new("UICorner", SpeedInput).CornerRadius = UDim.new(0, 5)
+
+styleButton(SetSpeedBtn, SettingsFrame, "Зберегти", 0.16, Color3.fromRGB(52, 73, 94))
+SetSpeedBtn.Size = UDim2.new(0.45, 0, 0, 26)
+SetSpeedBtn.Position = UDim2.new(0.5, 0, 0.16, 0)
+
+styleButton(ExitBtn, SettingsFrame, "STOP & DESTROY CHEAT", 0.54, Color3.fromRGB(192, 57, 43))
+ExitBtn.Font = Enum.Font.SourceSansBold
+
+-- ГЛОБАЛЬНІ СТАНИ
+_G.ChestFarm = false
+_G.LevelFarm = false
+_G.FlyMode = false
+_G.FlySpeed = 70
+_G.EspActive = false -- Стан для ESP
+
+local currentTween = nil
+local currentBV = nil
+
+local function stopMovement()
+    if currentTween then currentTween:Cancel(); currentTween = nil end
+    if currentBV then currentBV:Destroy(); currentBV = nil end
+end
+
+-- СИСТЕМНЕ ЗГОРТАННЯ НА LEFT CTRL
+local UserInputService = game:GetService("UserInputService")
+UserInputService.InputBegan:Connect(function(input, processed)
+    if not processed and input.KeyCode == Enum.KeyCode.LeftControl then
+        MainFrame.Visible = not MainFrame.Visible
+    end
+end)
+
+-- ЛОГІКА ПЕРЕМИКАННЯ 3-Х ВКЛАДОК
+CheatsTabBtn.MouseButton1Click:Connect(function()
+    CheatsFrame.Visible, VisualFrame.Visible, SettingsFrame.Visible = true, false, false
+    CheatsTabBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+    VisualTabBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    SettingsTabBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+end)
+
+VisualTabBtn.MouseButton1Click:Connect(function()
+    CheatsFrame.Visible, VisualFrame.Visible, SettingsFrame.Visible = false, true, false
+    CheatsTabBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    VisualTabBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+    SettingsTabBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+end)
+
+SettingsTabBtn.MouseButton1Click:Connect(function()
+    CheatsFrame.Visible, VisualFrame.Visible, SettingsFrame.Visible = false, false, true
+    CheatsTabBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    VisualTabBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    SettingsTabBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+end)
+
+-- КНОПКА ТА ЦИКЛ ОНОВЛЕННЯ ДЛЯ ESP (З підсвічуванням Box)
+EspBtn.MouseButton1Click:Connect(function()
+    _G.EspActive = not _G.EspActive
+    EspBtn.Text = "Player ESP: " .. (_G.EspActive and "ON" or "OFF")
+end)
+
+task.spawn(function()
+    while task.wait(1) do
+        if _G.EspActive then
+            for _, p in pairs(game:GetService("Players"):GetPlayers()) do
+                if p ~= Player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                    if not p.Character.HumanoidRootPart:FindFirstChild("XenoEspBox") then
+                        local box = Instance.new("BoxHandleAdornment")
+                        box.Name = "XenoEspBox"
+                        box.Size = Vector3.new(4, 6, 4)
+                        box.Color3 = Color3.fromRGB(255, 0, 0) -- Червоний колір підсвітки
+                        box.AlwaysOnTop = true
+                        box.ZIndex = 5
+                        box.Adornee = p.Character.HumanoidRootPart
+                        box.Parent = p.Character.HumanoidRootPart
+                    end
+                end
+            end
+        else
+            for _, p in pairs(game:GetService("Players"):GetPlayers()) do
+                if p.Character and p.Character:FindFirstChild("HumanoidRootPart") and p.Character.HumanoidRootPart:FindFirstChild("XenoEspBox") then
+                    p.Character.HumanoidRootPart.XenoEspBox:Destroy()
+                end
+            end
+        end
+    end
+end)
