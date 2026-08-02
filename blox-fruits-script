@@ -21,6 +21,7 @@ local FlyBtn = Instance.new("TextButton")
 -- Елементи вкладки «Візуал»
 local DayBtn = Instance.new("TextButton")
 local NightBtn = Instance.new("TextButton")
+local DefaultTimeBtn = Instance.new("TextButton") -- Нова кнопка класичного часу
 
 -- Елементи вкладки «Налаштування»
 local SpeedTitle = Instance.new("TextLabel")
@@ -87,28 +88,18 @@ CheatsTabBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
 
 -- СТВОРЕННЯ КОНТЕЙНЕРІВ
 local function createTabFrame(f, name, visible)
-    f.Name = name
-    f.Parent = MainFrame
-    f.BackgroundTransparency = 1
-    f.Position = UDim2.new(0, 0, 0.32, 0)
-    f.Size = UDim2.new(1, 0, 0.68, 0)
-    f.Visible = visible
+    f.Name = name f.Parent = MainFrame f.BackgroundTransparency = 1
+    f.Position = UDim2.new(0, 0, 0.32, 0) f.Size = UDim2.new(1, 0, 0.68, 0) f.Visible = visible
 end
-
 createTabFrame(CheatsFrame, "CheatsSection", true)
 createTabFrame(VisualFrame, "VisualSection", false)
 createTabFrame(SettingsFrame, "SettingsSection", false)
 
 -- ШАБЛОН КНОПОК
 local function styleButton(btn, parent, text, yPos, color)
-    btn.Parent = parent
-    btn.Position = UDim2.new(0.05, 0, yPos, 0)
-    btn.Size = UDim2.new(0.9, 0, 0, 30)
-    btn.BackgroundColor3 = color or Color3.fromRGB(45, 45, 55)
-    btn.Text = text
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.TextSize = 13
-    btn.Font = Enum.Font.SourceSans
+    btn.Parent = parent btn.Position = UDim2.new(0.05, 0, yPos, 0) btn.Size = UDim2.new(0.9, 0, 0, 28)
+    btn.BackgroundColor3 = color or Color3.fromRGB(45, 45, 55) btn.Text = text
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255) btn.TextSize = 12 btn.Font = Enum.Font.SourceSans
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 5)
 end
 
@@ -117,88 +108,66 @@ styleButton(ChestBtn, CheatsFrame, "Auto Chest: OFF", 0.02)
 styleButton(LevelBtn, CheatsFrame, "Auto Level: OFF", 0.28)
 styleButton(FlyBtn, CheatsFrame, "Fly Mode: OFF", 0.54)
 
--- КНОПКИ ЗМІНИ ЧАСУ
-styleButton(DayBtn, VisualFrame, "☀️ Встановити День", 0.02, Color3.fromRGB(230, 126, 34))
-styleButton(NightBtn, VisualFrame, "🌙 Встановити Ніч", 0.28, Color3.fromRGB(41, 128, 185))
+-- КНОПКИ ЛОКАЛЬНОГО ВІЗУАЛУ
+styleButton(DayBtn, VisualFrame, "☀️ Особистий День", 0.02, Color3.fromRGB(230, 126, 34))
+styleButton(NightBtn, VisualFrame, "🌙 Особиста Ніч", 0.28, Color3.fromRGB(41, 128, 185))
+styleButton(DefaultTimeBtn, VisualFrame, "⌛ Класичний Час", 0.54, Color3.fromRGB(39, 174, 96))
 
-SpeedTitle.Parent = SettingsFrame
-SpeedTitle.BackgroundTransparency = 1
-SpeedTitle.Position = UDim2.new(0.05, 0, 0.02, 0)
-SpeedTitle.Size = UDim2.new(0.9, 0, 0, 18)
-SpeedTitle.Text = "Швидкість польоту:"
-SpeedTitle.TextColor3 = Color3.fromRGB(200, 200, 200)
-SpeedTitle.TextSize = 13
-SpeedTitle.TextXAlignment = Enum.TextXAlignment.Left
-SpeedTitle.Font = Enum.Font.SourceSans
+SpeedTitle.Parent = SettingsFrame SpeedTitle.BackgroundTransparency = 1 SpeedTitle.Position = UDim2.new(0.05, 0, 0.02, 0)
+SpeedTitle.Size = UDim2.new(0.9, 0, 0, 18) SpeedTitle.Text = "Швидкість польоту:" SpeedTitle.TextColor3 = Color3.fromRGB(200, 200, 200)
+SpeedTitle.Font = Enum.Font.SourceSans SpeedTitle.TextSize = 13
 
-SpeedInput.Parent = SettingsFrame
-SpeedInput.Position = UDim2.new(0.05, 0, 0.16, 0)
-SpeedInput.Size = UDim2.new(0.42, 0, 0, 26)
-SpeedInput.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-SpeedInput.Text = "70"
-SpeedInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-SpeedInput.TextSize = 13
+SpeedInput.Parent = SettingsFrame SpeedInput.Position = UDim2.new(0.05, 0, 0.16, 0) SpeedInput.Size = UDim2.new(0.42, 0, 0, 26)
+SpeedInput.BackgroundColor3 = Color3.fromRGB(25, 25, 30) SpeedInput.Text = "70" SpeedInput.TextColor3 = Color3.fromRGB(255, 255, 255)
 Instance.new("UICorner", SpeedInput).CornerRadius = UDim.new(0, 5)
 
 styleButton(SetSpeedBtn, SettingsFrame, "Зберегти", 0.16, Color3.fromRGB(52, 73, 94))
-SetSpeedBtn.Size = UDim2.new(0.45, 0, 0, 26)
-SetSpeedBtn.Position = UDim2.new(0.5, 0, 0.16, 0)
-
+SetSpeedBtn.Size = UDim2.new(0.45, 0, 0, 26) SetSpeedBtn.Position = UDim2.new(0.5, 0, 0.16, 0)
 styleButton(ExitBtn, SettingsFrame, "STOP & DESTROY CHEAT", 0.54, Color3.fromRGB(192, 57, 43))
 ExitBtn.Font = Enum.Font.SourceSansBold
 
--- ГЛОБАЛЬНІ СТАНИ
-_G.ChestFarm = false
-_G.LevelFarm = false
-_G.FlyMode = false
-_G.FlySpeed = 70
-_G.VisualTime = nil
+_G.ChestFarm = false _G.LevelFarm = false _G.FlyMode = false _G.FlySpeed = 70 _G.LocalVisualTime = "Default"
+local currentTween, currentBV = nil, nil
+local function stopMovement() if currentTween then currentTween:Cancel() currentTween = nil end if currentBV then currentBV:Destroy() currentBV = nil end end
 
-local currentTween = nil
-local currentBV = nil
-
-local function stopMovement()
-    if currentTween then currentTween:Cancel(); currentTween = nil end
-    if currentBV then currentBV:Destroy(); currentBV = nil end
-end
-
--- ЗГОРТАННЯ ОПТИМІЗОВАНЕ
 ToggleMenuBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
-    if MainFrame.Visible then
-        ToggleMenuBtn.Text = "ON"
-        ToggleMenuBtn.BackgroundColor3 = Color3.fromRGB(39, 174, 96)
-    else
-        ToggleMenuBtn.Text = "OFF"
-        ToggleMenuBtn.BackgroundColor3 = Color3.fromRGB(192, 57, 43)
+    ToggleMenuBtn.Text = MainFrame.Visible and "ON" or "OFF"
+    ToggleMenuBtn.BackgroundColor3 = MainFrame.Visible and Color3.fromRGB(39, 174, 96) or Color3.fromRGB(192, 57, 43)
+end)
+
+-- ФУНКЦІЯ ЛОКАЛЬНОЇ ЗМІНИ НЕБА
+local function setLocalSky(timeType)
+    _G.LocalVisualTime = timeType
+    local sky = Lighting:FindFirstChildOfClass("Sky")
+    if sky and timeType ~= "Default" then sky:Destroy() end
+    if timeType == "Day" then
+        Lighting.ClockTime = 14
+        Lighting.GeographicLatitude = 41.5
+    elseif timeType == "Night" then
+        Lighting.ClockTime = 0
+        Lighting.GeographicLatitude = 0
+    end
+end
+
+DayBtn.MouseButton1Click:Connect(function() setLocalSky("Day") end)
+NightBtn.MouseButton1Click:Connect(function() setLocalSky("Night") end)
+DefaultTimeBtn.MouseButton1Click:Connect(function() setLocalSky("Default") end)
+
+CheatsTabBtn.MouseButton1Click:Connect(function() CheatsFrame.Visible, VisualFrame.Visible, SettingsFrame.Visible = true, false, false end)
+VisualTabBtn.MouseButton1Click:Connect(function() CheatsFrame.Visible, VisualFrame.Visible, SettingsFrame.Visible = false, true, false end)
+SettingsTabBtn.MouseButton1Click:Connect(function() CheatsFrame.Visible, VisualFrame.Visible, SettingsFrame.Visible = false, false, true end)
+-- ЖОРСТКИЙ ЦИКЛ КЛІЄНТСЬКОГО БЛОКУВАННЯ ЧАСУ СЕРВЕРА
+task.spawn(function()
+    while task.wait(0.01) do
+        if _G.LocalVisualTime == "Day" then
+            Lighting.ClockTime = 14
+        elseif _G.LocalVisualTime == "Night" then
+            Lighting.ClockTime = 0
+        end
     end
 end)
 
--- ЗМІНА ЧАСУ ДОБИ (Примусова)
-DayBtn.MouseButton1Click:Connect(function() _G.VisualTime = "Day" end)
-NightBtn.MouseButton1Click:Connect(function() _G.VisualTime = "Night" end)
-
--- ПЕРЕМИКАННЯ ВКЛАДОК
-CheatsTabBtn.MouseButton1Click:Connect(function()
-    CheatsFrame.Visible, VisualFrame.Visible, SettingsFrame.Visible = true, false, false
-    CheatsTabBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
-    VisualTabBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-    SettingsTabBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-end)
-
-VisualTabBtn.MouseButton1Click:Connect(function()
-    CheatsFrame.Visible, VisualFrame.Visible, SettingsFrame.Visible = false, true, false
-    CheatsTabBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-    VisualTabBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
-    SettingsTabBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-end)
-
-SettingsTabBtn.MouseButton1Click:Connect(function()
-    CheatsFrame.Visible, VisualFrame.Visible, SettingsFrame.Visible = false, false, true
-    CheatsTabBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-    VisualTabBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-    SettingsTabBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
-end)
 -- ДОПОМІЖНІ ФУНКЦІЇ ДЛЯ ФАРМУ
 local function getClosestChest()
     local closest, dist = nil, math.huge
@@ -236,17 +205,6 @@ local function takeQuest(questName, questId)
     if remote then remote:InvokeServer("StartQuest", questName, questId) end
 end
 
--- ЦИКЛ ФРИЗУ ЧАСУ ДОБИ (Робочий Візуал)
-task.spawn(function()
-    while task.wait(0.05) do
-        if _G.VisualTime == "Day" then
-            Lighting.ClockTime = 14
-        elseif _G.VisualTime == "Night" then
-            Lighting.ClockTime = 0
-        end
-    end
-end)
-
 -- ЦИКЛ ФАРМУ СКРИНЬ
 task.spawn(function()
     while ScreenGui.Parent do
@@ -275,7 +233,7 @@ task.spawn(function()
     end
 end)
 
--- АВТОФАРМ ЛЕВЕЛУ (Переписаний під реальну зброю)
+-- АВТОФАРМ ЛЕВЕЛУ (ВИПРАВЛЕНЕ ЕКІПІРУВАННЯ ЗБРОЇ)
 task.spawn(function()
     while ScreenGui.Parent do
         task.wait(0.1)
@@ -286,7 +244,7 @@ task.spawn(function()
                 local Humanoid = Character and Character:FindFirstChild("Humanoid")
                 if not Root or not Humanoid or Humanoid.Health <= 0 then return end
 
-                -- Новий пошук зброї за реальними назвами
+                -- Перевірка та автоматичний вибір справжньої зброї з бекпаку
                 local currentTool = Character:FindFirstChildOfClass("Tool")
                 if not currentTool then
                     for _, tool in pairs(Player.Backpack:GetChildren()) do
@@ -397,13 +355,12 @@ task.spawn(function()
     end
 end)
 
--- ЛОГІКА НАЛАШТУВАННЯ ШВИДКОСТІ
+-- ЛОГІКА КНОПОК ТА ЧАСУ
 SetSpeedBtn.MouseButton1Click:Connect(function()
     local num = tonumber(SpeedInput.Text)
     if num then _G.FlySpeed = num SetSpeedBtn.Text = "ОК!" task.wait(0.7) SetSpeedBtn.Text = "Зберегти" else SpeedInput.Text = "Помилка" end
 end)
 
--- ЛОГІКА АКТИВАЦІЇ КНОПОК
 ChestBtn.MouseButton1Click:Connect(function()
     _G.ChestFarm = not _G.ChestFarm
     if _G.ChestFarm then _G.LevelFarm = false _G.FlyMode = false LevelBtn.Text = "Auto Level: OFF" FlyBtn.Text = "Fly Mode: OFF" end
@@ -414,7 +371,7 @@ end)
 LevelBtn.MouseButton1Click:Connect(function()
     _G.LevelFarm = not _G.LevelFarm
     if _G.LevelFarm then 
-        _G.ChestFarm = false
+        _G.ChestFarm = false 
         _G.FlyMode = false 
         ChestBtn.Text = "Auto Chest: OFF" 
         FlyBtn.Text = "Fly Mode: OFF" 
@@ -438,7 +395,8 @@ end)
 ExitBtn.MouseButton1Click:Connect(function()
     _G.ChestFarm = false 
     _G.LevelFarm = false 
-    _G.FlyMode = false
+    _G.FlyMode = false 
+    _G.LocalVisualTime = "Default"
     stopMovement()
     
     local Root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
