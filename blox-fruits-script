@@ -1,86 +1,330 @@
-local Config = {
-    ChestFarm = false,
-    AutoClick = false,
-    FlyMode = false,
-    FlySpeed = 50
-}
+-- ПОВНІСТЮ ВИПРАВЛЕНИЙ СКРИПТ + ПОЛІТ + РЕГУЛЮВАННЯ ШВИДКОСТІ
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local ChestBtn = Instance.new("TextButton")
+local LevelBtn = Instance.new("TextButton")
+local FlyBtn = Instance.new("TextButton")
+
+-- Нові елементи для зміни швидкості
+local SpeedTitle = Instance.new("TextLabel")
+local SpeedInput = Instance.new("TextBox")
+local SetSpeedBtn = Instance.new("TextButton")
+local ExitBtn = Instance.new("TextButton")
 
 local Player = game:GetService("Players").LocalPlayer
-local RunService = game:GetService("RunService")
-
--- ГРАФІЧНИЙ ІНТЕРФЕЙС
-local ScreenGui = Instance.new("ScreenGui", Player:WaitForChild("PlayerGui"))
+ScreenGui.Parent = game:GetService("CoreGui") or Player:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
 
-local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, 220, 0, 180)
-MainFrame.Position = UDim2.new(0.1, 0, 0.3, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+MainFrame.Name = "BF_Xeno_Fixed_Final"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+MainFrame.Position = UDim2.new(0.05, 0, 0.3, 0)
+MainFrame.Size = UDim2.new(0, 220, 0, 290) -- Збільшив висоту для налаштувань швидкості
 MainFrame.Active = true
 MainFrame.Draggable = true
-Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
 
-local Title = Instance.new("TextLabel", MainFrame)
-Title.Size = UDim2.new(1, 0, 0, 30)
-Title.Text = "My First Hub v1.1"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
+
+Title.Parent = MainFrame
 Title.BackgroundTransparency = 1
+Title.Size = UDim2.new(1, 0, 0, 35)
+Title.Text = "Blox Fruits Perfect [Xeno]"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 15
 Title.Font = Enum.Font.SourceSansBold
 
--- Функція створення кнопок
-local function CreateButton(text, yPos, callback)
-    local Btn = Instance.new("TextButton", MainFrame)
-    Btn.Size = UDim2.new(0.9, 0, 0, 30)
-    Btn.Position = UDim2.new(0.05, 0, 0, yPos)
-    Btn.Text = text
-    Btn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
-    Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Btn.Font = Enum.Font.SourceSans
-    Btn.TextSize = 14
-    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 5)
-    
-    Btn.MouseButton1Click:Connect(callback)
-    return Btn
+-- Шаблон стилізації кнопок
+local function styleButton(btn, text, yPos, color)
+    btn.Parent = MainFrame
+    btn.Position = UDim2.new(0.05, 0, yPos, 0)
+    btn.Size = UDim2.new(0.9, 0, 0, 32)
+    btn.BackgroundColor3 = color or Color3.fromRGB(45, 45, 55)
+    btn.Text = text
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.TextSize = 14
+    btn.Font = Enum.Font.SourceSans
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
 end
 
--- КНОПКИ
-local ChestBtn; ChestBtn = CreateButton("Auto Chest: OFF", 40, function()
-    Config.ChestFarm = not Config.ChestFarm
-    ChestBtn.Text = "Auto Chest: " .. (Config.ChestFarm and "ON" or "OFF")
-end)
+styleButton(ChestBtn, "Auto Chest: OFF", 0.13)
+styleButton(LevelBtn, "Auto Level: OFF", 0.26)
+styleButton(FlyBtn, "Fly Mode: OFF", 0.39)
 
-local ClickBtn; ClickBtn = CreateButton("Auto Clicker: OFF", 80, function()
-    Config.AutoClick = not Config.AutoClick
-    ClickBtn.Text = "Auto Clicker: " .. (Config.AutoClick and "ON" or "OFF")
-end)
+-- СТИЛІЗАЦІЯ БЛОКУ РЕГУЛЮВАННЯ ШВИДКОСТІ
+SpeedTitle.Parent = MainFrame
+SpeedTitle.BackgroundTransparency = 1
+SpeedTitle.Position = UDim2.new(0.05, 0, 0.52, 0)
+SpeedTitle.Size = UDim2.new(0.9, 0, 0, 20)
+SpeedTitle.Text = "Швидкість польоту:"
+SpeedTitle.TextColor3 = Color3.fromRGB(200, 200, 200)
+SpeedTitle.TextSize = 13
+SpeedTitle.TextXAlignment = Enum.TextXAlignment.Left
+SpeedTitle.Font = Enum.Font.SourceSans
 
-local FlyBtn; FlyBtn = CreateButton("Fly Mode: OFF", 120, function()
-    Config.FlyMode = not Config.FlyMode
-    FlyBtn.Text = "Fly Mode: " .. (Config.FlyMode and "ON" or "OFF")
-end)
+SpeedInput.Parent = MainFrame
+SpeedInput.Position = UDim2.new(0.05, 0, 0.60, 0)
+SpeedInput.Size = UDim2.new(0.42, 0, 0, 28)
+SpeedInput.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+SpeedInput.Text = "70" -- Початкове значення швидкості
+SpeedInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpeedInput.TextSize = 13
+Instance.new("UICorner", SpeedInput).CornerRadius = UDim.new(0, 5)
 
--- ЛОГІКА: АВТО-КЛІКЕР
+styleButton(SetSpeedBtn, "Зберегти", 0.60, Color3.fromRGB(52, 73, 94))
+SetSpeedBtn.Size = UDim2.new(0.45, 0, 0, 28)
+SetSpeedBtn.Position = UDim2.new(0.5, 0, 0.60, 0)
+
+styleButton(ExitBtn, "STOP & DESTROY CHEAT", 0.82, Color3.fromRGB(192, 57, 43))
+ExitBtn.Font = Enum.Font.SourceSansBold
+
+_G.ChestFarm = false
+_G.LevelFarm = false
+_G.FlyMode = false
+_G.FlySpeed = 70 -- Початкова глобальна швидкість
+
+local currentTween = nil
+local currentBV = nil
+
+local function stopMovement()
+    if currentTween then currentTween:Cancel(); currentTween = nil end
+    if currentBV then currentBV:Destroy(); currentBV = nil end
+end
+
+local function getClosestChest()
+    local closest, dist = nil, math.huge
+    local Root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if not Root then return nil end
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("TouchTransmitter") and obj.Parent and string.find(obj.Parent.Name, "Chest") then
+            local chest = obj.Parent
+            local part = chest:IsA("BasePart") and chest or chest:FindFirstChildOfClass("BasePart")
+            if part then
+                local d = (Root.Position - part.Position).Magnitude
+                if d < dist then closest = part; dist = d end
+            end
+        end
+    end
+    return closest
+end
+
+local function getMyLevelMobName()
+    if not Player:FindFirstChild("Data") or not Player.Data:FindFirstChild("Level") then return "Bandit", "BanditQuest1", 1 end
+    local lv = Player.Data.Level.Value
+    if lv < 10 then return "Bandit", "BanditQuest1", 1
+    elseif lv < 15 then return "Monkey", "JungleQuest", 1
+    elseif lv < 30 then return "Gorilla", "JungleQuest", 2
+    elseif lv < 60 then return "Pirate", "PirateIslandQuest", 1
+    elseif lv < 90 then return "Brute", "PirateIslandQuest", 2
+    elseif lv < 120 then return "Snow Soldier", "SnowQuest", 1
+    elseif lv < 150 then return "Snowman", "SnowQuest", 2
+    elseif lv < 175 then return "Chief Petty Officer", "MarineQuest2", 1
+    else return "Sky Bandit", "SkyQuest", 1 end
+end
+
+local function takeQuest(questName, questId)
+    local remote = game:GetService("ReplicatedStorage"):FindFirstChild("Remotes") and game:GetService("ReplicatedStorage").Remotes:FindFirstChild("CommF_")
+    if remote then remote:InvokeServer("StartQuest", questName, questId) end
+end
+
+-- ЦИКЛ ФАРМУ СКРИНЬ
 task.spawn(function()
-    while task.wait(0.1) do
-        if Config.AutoClick and Player.Character and Player.Character:FindFirstChildOfClass("Tool") then
-            Player.Character:FindFirstChildOfClass("Tool"):Activate()
+    while ScreenGui.Parent do
+        task.wait(0.1)
+        if _G.ChestFarm then
+            local Root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+            local chest = getClosestChest()
+            if chest and Root and _G.ChestFarm then
+                stopMovement()
+                currentBV = Instance.new("BodyVelocity", Root)
+                currentBV.Velocity = Vector3.new(0,0,0)
+                currentBV.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+                
+                currentTween = game:GetService("TweenService"):Create(Root, TweenInfo.new((Root.Position - chest.Position).Magnitude / 350, Enum.EasingStyle.Linear), {CFrame = chest.CFrame})
+                currentTween:Play()
+                
+                local completed = false
+                local cConn = currentTween.Completed:Connect(function() completed = true end)
+                while not completed and _G.ChestFarm do task.wait(0.01) end
+                cConn:Disconnect()
+                
+                stopMovement()
+                if _G.ChestFarm then task.wait(0.15) end
+            end
         end
     end
 end)
 
--- ЛОГІКА: ПЛАВНИЙ ПОЛІТ (Без BodyVelocity)
-RunService.RenderStepped:Connect(function()
-    if Config.FlyMode and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") and Player.Character:FindFirstChild("Humanoid") then
-        local HRP = Player.Character.HumanoidRootPart
-        local Humanoid = Player.Character.Humanoid
-        
-        -- Зупиняємо падіння
-        HRP.Velocity = Vector3.new(0, 0, 0)
-        
-        -- Рахуємо куди біжить гравець
-        local moveDirection = Humanoid.MoveDirection
-        if moveDirection.Magnitude > 0 then
-            HRP.CFrame = HRP.CFrame + (moveDirection * Config.FlySpeed * task.wait())
+-- ЦИКЛ ФАРМУ ЛЕВЕЛУ
+task.spawn(function()
+    while ScreenGui.Parent do
+        task.wait(0.1)
+        if _G.LevelFarm then
+            pcall(function()
+                local Character = Player.Character
+                local Root = Character and Character:FindFirstChild("HumanoidRootPart")
+                if not Root then return end
+                
+                local currentTool = Character:FindFirstChildOfClass("Tool")
+                if not currentTool or (currentTool.ToolTip ~= "Melee" and currentTool.ToolTip ~= "Sword") then
+                    for _, tool in pairs(Player.Backpack:GetChildren()) do
+                        if tool:IsA("Tool") and (tool.ToolTip == "Melee" or tool.ToolTip == "Sword") then
+                            Character.Humanoid:EquipTool(tool)
+                            break
+                        end
+                    end
+                end
+                
+                local targetMobName, questName, questId = getMyLevelMobName()
+                local hasQuest = Player.PlayerGui:FindFirstChild("Main") and Player.PlayerGui.Main:FindFirstChild("Quest") and Player.PlayerGui.Main.Quest.Visible
+                if not hasQuest then takeQuest(questName, questId) end
+                
+                local targetMob = nil
+                for _, enemy in pairs(workspace:GetChildren()) do
+                    if enemy.Name == targetMobName and enemy:FindFirstChild("HumanoidRootPart") and enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 then
+                        targetMob = enemy
+                        break
+                    end
+                end
+                
+                if not targetMob and workspace:FindFirstChild("Enemies") then
+                    for _, enemy in pairs(workspace.Enemies:GetChildren()) do
+                        if enemy.Name == targetMobName and enemy:FindFirstChild("HumanoidRootPart") and enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 then
+                            targetMob = enemy
+                            break
+                        end
+                    end
+                end
+
+                if targetMob and _G.LevelFarm then
+                    stopMovement()
+                    Root.CFrame = targetMob.HumanoidRootPart.CFrame * CFrame.new(0, 4, 0)
+                    
+                    if not Root:FindFirstChild("FarmVelocity") then
+                        local bv = Instance.new("BodyVelocity")
+                        bv.Name = "FarmVelocity"
+                        bv.Velocity = Vector3.new(0,0,0)
+                        bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+                        bv.Parent = Root
+                    end
+                    
+                    local tool = Character:FindFirstChildOfClass("Tool")
+                    if tool then tool:Activate() end
+                else
+                    if Root and Root:FindFirstChild("FarmVelocity") then Root.FarmVelocity:Destroy() end
+                end
+            end)
+        else
+            local Root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+            if Root and Root:FindFirstChild("FarmVelocity") then Root.FarmVelocity:Destroy() end
         end
     end
+end)
+
+-- КОНТРОЛЕР ПЛАВНОГО ПОЛЬОТУ (З урахуванням кастомної швидкості)
+task.spawn(function()
+    local flyBV, flyBG
+    local UserInputService = game:GetService("UserInputService")
+    
+    while ScreenGui.Parent do
+        task.wait()
+        local Character = Player.Character
+        local Root = Character and Character:FindFirstChild("HumanoidRootPart")
+        local Humanoid = Character and Character:FindFirstChild("Humanoid")
+        local Camera = workspace.CurrentCamera
+        if _G.FlyMode and Root and Humanoid and Camera then
+            if not flyBV then
+                flyBV = Instance.new("BodyVelocity", Root)
+                flyBV.Name = "XenoFlyVelocity"
+                flyBV.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+                
+                flyBG = Instance.new("BodyGyro", Root)
+                flyBG.Name = "XenoFlyGyro"
+                flyBG.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+            end
+            
+            flyBG.CFrame = Camera.CFrame
+            local direction = Humanoid.MoveDirection
+            local velocity = direction * _G.FlySpeed
+            
+            if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+                velocity = velocity + Vector3.new(0, _G.FlySpeed, 0)
+            elseif UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
+                velocity = velocity + Vector3.new(0, -_G.FlySpeed, 0)
+            end
+            
+            if direction.Magnitude == 0 and not UserInputService:IsKeyDown(Enum.KeyCode.Space) and not UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
+                flyBV.Velocity = Vector3.new(0, 0.1, 0)
+            else
+                flyBV.Velocity = velocity
+            end
+        else
+            if flyBV then flyBV:Destroy() flyBV = nil end
+            if flyBG then flyBG:Destroy() flyBG = nil end
+        end
+    end
+end)
+
+-- ЛОГІКА ЗБЕРЕЖЕННЯ ШВИДКОСТІ
+SetSpeedBtn.MouseButton1Click:Connect(function()
+    local num = tonumber(SpeedInput.Text)
+    if num then
+        _G.FlySpeed = num
+        SetSpeedBtn.Text = "ОК!"
+        task.wait(0.7)
+        SetSpeedBtn.Text = "Зберегти"
+    else
+        SpeedInput.Text = "Помилка"
+    end
+end)
+
+-- НАЛАШТУВАННЯ КНОПОК
+ChestBtn.MouseButton1Click:Connect(function()
+    _G.ChestFarm = not _G.ChestFarm
+    if _G.ChestFarm then 
+        _G.LevelFarm = false 
+        _G.FlyMode = false 
+        LevelBtn.Text = "Auto Level: OFF" 
+        FlyBtn.Text = "Fly Mode: OFF" 
+    end
+    ChestBtn.Text = "Auto Chest: " .. (_G.ChestFarm and "ON" or "OFF")
+    if not _G.ChestFarm then stopMovement() end
+end)
+
+LevelBtn.MouseButton1Click:Connect(function()
+    _G.LevelFarm = not _G.LevelFarm
+    if _G.LevelFarm then 
+        _G.ChestFarm = false 
+        _G.FlyMode = false 
+        ChestBtn.Text = "Auto Chest: OFF" 
+        FlyBtn.Text = "Fly Mode: OFF" 
+        stopMovement() 
+    end
+    LevelBtn.Text = "Auto Level: " .. (_G.LevelFarm and "ON" or "OFF")
+end)
+
+FlyBtn.MouseButton1Click:Connect(function()
+    _G.FlyMode = not _G.FlyMode
+    if _G.FlyMode then 
+        _G.ChestFarm = false 
+        _G.LevelFarm = false 
+        ChestBtn.Text = "Auto Chest: OFF" 
+        LevelBtn.Text = "Auto Level: OFF" 
+        stopMovement() 
+    end
+    FlyBtn.Text = "Fly Mode: " .. (_G.FlyMode and "ON" or "OFF")
+end)
+
+ExitBtn.MouseButton1Click:Connect(function()
+    _G.ChestFarm = false 
+    _G.LevelFarm = false 
+    _G.FlyMode = false
+    stopMovement()
+    local Root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if Root then
+        if Root:FindFirstChild("FarmVelocity") then Root.FarmVelocity:Destroy() end
+        if Root:FindFirstChild("XenoFlyVelocity") then Root.XenoFlyVelocity:Destroy() end
+        if Root:FindFirstChild("XenoFlyGyro") then Root.XenoFlyGyro:Destroy() end
+    end
+    ScreenGui:Destroy()
 end)
