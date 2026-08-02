@@ -1,14 +1,14 @@
--- 1. СТВОРЕННЯ ТАБЛИЦІ НАЛАШТУВАНЬ (Щоб код був акуратним)
 local Config = {
     ChestFarm = false,
     AutoClick = false,
     FlyMode = false,
-    ChestSpeed = 350
+    FlySpeed = 50
 }
 
 local Player = game:GetService("Players").LocalPlayer
+local RunService = game:GetService("RunService")
 
--- 2. ГРАФІЧНИЙ ІНТЕРФЕЙС (Компактне меню)
+-- ГРАФІЧНИЙ ІНТЕРФЕЙС
 local ScreenGui = Instance.new("ScreenGui", Player:WaitForChild("PlayerGui"))
 ScreenGui.ResetOnSpawn = false
 
@@ -22,11 +22,12 @@ Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
 
 local Title = Instance.new("TextLabel", MainFrame)
 Title.Size = UDim2.new(1, 0, 0, 30)
-Title.Text = "My First Hub v1.0"
+Title.Text = "My First Hub v1.1"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.BackgroundTransparency = 1
+Title.Font = Enum.Font.SourceSansBold
 
--- Функція для швидкого створення кнопок (Заощаджує купу місця в коді!)
+-- Функція створення кнопок
 local function CreateButton(text, yPos, callback)
     local Btn = Instance.new("TextButton", MainFrame)
     Btn.Size = UDim2.new(0.9, 0, 0, 30)
@@ -34,13 +35,15 @@ local function CreateButton(text, yPos, callback)
     Btn.Text = text
     Btn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
     Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Btn.Font = Enum.Font.SourceSans
+    Btn.TextSize = 14
     Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 5)
     
     Btn.MouseButton1Click:Connect(callback)
     return Btn
 end
 
--- 3. СТВОРЕННЯ КНОПОК ТА ЇХНЯ ЛОГІКА
+-- КНОПКИ
 local ChestBtn; ChestBtn = CreateButton("Auto Chest: OFF", 40, function()
     Config.ChestFarm = not Config.ChestFarm
     ChestBtn.Text = "Auto Chest: " .. (Config.ChestFarm and "ON" or "OFF")
@@ -56,9 +59,7 @@ local FlyBtn; FlyBtn = CreateButton("Fly Mode: OFF", 120, function()
     FlyBtn.Text = "Fly Mode: " .. (Config.FlyMode and "ON" or "OFF")
 end)
 
--- 4. РОБОЧІ ФУНКЦІЇ ЧИТА (БЕКЕНД)
-
--- Авто-клікер
+-- ЛОГІКА: АВТО-КЛІКЕР
 task.spawn(function()
     while task.wait(0.1) do
         if Config.AutoClick and Player.Character and Player.Character:FindFirstChildOfClass("Tool") then
@@ -67,23 +68,19 @@ task.spawn(function()
     end
 end)
 
--- Політ
-task.spawn(function()
-    local bv, bg
-    while task.wait(0.1) do
-        local char = Player.Character
-        if Config.FlyMode and char and char:FindFirstChild("HumanoidRootPart") then
-            if not bv then
-                bv = Instance.new("BodyVelocity", char.HumanoidRootPart)
-                bv.MaxForce = Vector3.new(1e5, 1e5, 1e5)
-                bg = Instance.new("BodyGyro", char.HumanoidRootPart)
-                bg.MaxTorque = Vector3.new(1e5, 1e5, 1e5)
-            end
-            bv.Velocity = char.Humanoid.MoveDirection * 100
-            bg.CFrame = workspace.CurrentCamera.CFrame
-        else
-            if bv then bv:Destroy() bv = nil end
-            if bg then bg:Destroy() bg = nil end
+-- ЛОГІКА: ПЛАВНИЙ ПОЛІТ (Без BodyVelocity)
+RunService.RenderStepped:Connect(function()
+    if Config.FlyMode and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") and Player.Character:FindFirstChild("Humanoid") then
+        local HRP = Player.Character.HumanoidRootPart
+        local Humanoid = Player.Character.Humanoid
+        
+        -- Зупиняємо падіння
+        HRP.Velocity = Vector3.new(0, 0, 0)
+        
+        -- Рахуємо куди біжить гравець
+        local moveDirection = Humanoid.MoveDirection
+        if moveDirection.Magnitude > 0 then
+            HRP.CFrame = HRP.CFrame + (moveDirection * Config.FlySpeed * task.wait())
         end
     end
 end)
