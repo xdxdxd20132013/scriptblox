@@ -1,7 +1,7 @@
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
 local Title = Instance.new("TextLabel")
-local ToggleMenuBtn = Instance.new("TextButton") -- Кнопка-квадратик згортання
+local ToggleMenuBtn = Instance.new("TextButton")
 
 -- Перемикачі вкладок (3 розділи)
 local CheatsTabBtn = Instance.new("TextButton")
@@ -33,12 +33,12 @@ local Lighting = game:GetService("Lighting")
 ScreenGui.Parent = game:GetService("CoreGui") or Player:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
 
--- КНОПКА-КВАДРАТИК ДЛЯ ЗГОРТАННЯ МЕНЮ
+-- КНОПКА-КВАДРАТИК ДЛЯ ЗГОРТАННЯ
 ToggleMenuBtn.Name = "XenoToggleBtn"
 ToggleMenuBtn.Parent = ScreenGui
 ToggleMenuBtn.Position = UDim2.new(0.01, 0, 0.3, 0)
 ToggleMenuBtn.Size = UDim2.new(0, 45, 0, 45)
-ToggleMenuBtn.BackgroundColor3 = Color3.fromRGB(39, 174, 96) -- Зелена за замовчуванням (меню відкрито)
+ToggleMenuBtn.BackgroundColor3 = Color3.fromRGB(39, 174, 96)
 ToggleMenuBtn.Text = "ON"
 ToggleMenuBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleMenuBtn.Font = Enum.Font.SourceSansBold
@@ -67,7 +67,7 @@ Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 14
 Title.Font = Enum.Font.SourceSansBold
 
--- СТИЛІЗАЦІЯ КНОПОК ПЕРЕМИКАННЯ ВКЛАДОК
+-- СТИЛІЗАЦІЯ КНОПОК ВКЛАДОК
 local function styleTabSelect(btn, text, xPos)
     btn.Parent = MainFrame
     btn.Position = UDim2.new(xPos, 0, 0.16, 0)
@@ -117,7 +117,7 @@ styleButton(ChestBtn, CheatsFrame, "Auto Chest: OFF", 0.02)
 styleButton(LevelBtn, CheatsFrame, "Auto Level: OFF", 0.28)
 styleButton(FlyBtn, CheatsFrame, "Fly Mode: OFF", 0.54)
 
--- КНОПКИ ЗМІНИ ЧАСУ (Вкладка Візуал)
+-- КНОПКИ ЗМІНИ ЧАСУ
 styleButton(DayBtn, VisualFrame, "☀️ Встановити День", 0.02, Color3.fromRGB(230, 126, 34))
 styleButton(NightBtn, VisualFrame, "🌙 Встановити Ніч", 0.28, Color3.fromRGB(41, 128, 185))
 
@@ -152,6 +152,7 @@ _G.ChestFarm = false
 _G.LevelFarm = false
 _G.FlyMode = false
 _G.FlySpeed = 70
+_G.VisualTime = nil
 
 local currentTween = nil
 local currentBV = nil
@@ -161,26 +162,21 @@ local function stopMovement()
     if currentBV then currentBV:Destroy(); currentBV = nil end
 end
 
--- ОБРОБНИК КНОПКИ-КВАДРАТИКА ДЛЯ ЗГОРТАННЯ (Статус ON/OFF)
+-- ЗГОРТАННЯ ОПТИМІЗОВАНЕ
 ToggleMenuBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
     if MainFrame.Visible then
         ToggleMenuBtn.Text = "ON"
-        ToggleMenuBtn.BackgroundColor3 = Color3.fromRGB(39, 174, 96) -- Зелена
+        ToggleMenuBtn.BackgroundColor3 = Color3.fromRGB(39, 174, 96)
     else
         ToggleMenuBtn.Text = "OFF"
-        ToggleMenuBtn.BackgroundColor3 = Color3.fromRGB(192, 57, 43) -- Червона
+        ToggleMenuBtn.BackgroundColor3 = Color3.fromRGB(192, 57, 43)
     end
 end)
 
--- ЛОГІКА ЗМІНИ ЧАСУ ДОБИ (ВІЗУАЛ)
-DayBtn.MouseButton1Click:Connect(function()
-    Lighting.ClockTime = 14 -- Ставимо 14:00 (День)
-end)
-
-NightBtn.MouseButton1Click:Connect(function()
-    Lighting.ClockTime = 0 -- Ставимо 00:00 (Ніч)
-end)
+-- ЗМІНА ЧАСУ ДОБИ (Примусова)
+DayBtn.MouseButton1Click:Connect(function() _G.VisualTime = "Day" end)
+NightBtn.MouseButton1Click:Connect(function() _G.VisualTime = "Night" end)
 
 -- ПЕРЕМИКАННЯ ВКЛАДОК
 CheatsTabBtn.MouseButton1Click:Connect(function()
@@ -240,6 +236,17 @@ local function takeQuest(questName, questId)
     if remote then remote:InvokeServer("StartQuest", questName, questId) end
 end
 
+-- ЦИКЛ ФРИЗУ ЧАСУ ДОБИ (Робочий Візуал)
+task.spawn(function()
+    while task.wait(0.05) do
+        if _G.VisualTime == "Day" then
+            Lighting.ClockTime = 14
+        elseif _G.VisualTime == "Night" then
+            Lighting.ClockTime = 0
+        end
+    end
+end)
+
 -- ЦИКЛ ФАРМУ СКРИНЬ
 task.spawn(function()
     while ScreenGui.Parent do
@@ -268,7 +275,7 @@ task.spawn(function()
     end
 end)
 
--- АВТОФАРМ ЛЕВЕЛУ
+-- АВТОФАРМ ЛЕВЕЛУ (Переписаний під реальну зброю)
 task.spawn(function()
     while ScreenGui.Parent do
         task.wait(0.1)
@@ -279,10 +286,11 @@ task.spawn(function()
                 local Humanoid = Character and Character:FindFirstChild("Humanoid")
                 if not Root or not Humanoid or Humanoid.Health <= 0 then return end
 
+                -- Новий пошук зброї за реальними назвами
                 local currentTool = Character:FindFirstChildOfClass("Tool")
-                if not currentTool or (currentTool.ToolTip ~= "Melee" and currentTool.ToolTip ~= "Sword") then
+                if not currentTool then
                     for _, tool in pairs(Player.Backpack:GetChildren()) do
-                        if tool:IsA("Tool") and (tool.ToolTip == "Melee" or tool.ToolTip == "Sword") then
+                        if tool:IsA("Tool") and (tool.Name == "Combat" or tool.Name == "Dark Step" or tool.Name == "Electro" or tool.Name == "Water Kung Fu" or string.find(tool.Name, "Sword") or tool:FindFirstChild("Animate")) then
                             Humanoid:EquipTool(tool)
                             break
                         end
@@ -405,13 +413,25 @@ end)
 
 LevelBtn.MouseButton1Click:Connect(function()
     _G.LevelFarm = not _G.LevelFarm
-    if _G.LevelFarm then _G.ChestFarm = false _G.FlyMode = false ChestBtn.Text = "Auto Chest: OFF" FlyBtn.Text = "Fly Mode: OFF" stopMovement() end
+    if _G.LevelFarm then 
+        _G.ChestFarm = false
+        _G.FlyMode = false 
+        ChestBtn.Text = "Auto Chest: OFF" 
+        FlyBtn.Text = "Fly Mode: OFF" 
+        stopMovement() 
+    end
     LevelBtn.Text = "Auto Level: " .. (_G.LevelFarm and "ON" or "OFF")
 end)
 
 FlyBtn.MouseButton1Click:Connect(function()
     _G.FlyMode = not _G.FlyMode
-    if _G.FlyMode then _G.ChestFarm = false _G.LevelFarm = false ChestBtn.Text = "Auto Chest: OFF" LevelBtn.Text = "Auto Level: OFF" stopMovement() end
+    if _G.FlyMode then 
+        _G.ChestFarm = false 
+        _G.LevelFarm = false 
+        ChestBtn.Text = "Auto Chest: OFF" 
+        LevelBtn.Text = "Auto Level: OFF" 
+        stopMovement() 
+    end
     FlyBtn.Text = "Fly Mode: " .. (_G.FlyMode and "ON" or "OFF")
 end)
 
