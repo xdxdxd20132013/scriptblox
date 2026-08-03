@@ -34,8 +34,7 @@ local Player = game:GetService("Players").LocalPlayer
 local Lighting = game:GetService("Lighting")
 ScreenGui.Parent = game:GetService("CoreGui") or Player:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
-
--- ТВОЯ РОБОЧА КНОПКА-КВАДРАТИК ON/OFF
+-- КНОПКА-КВАДРАТИК ON/OFF (ЗГОРТАННЯ)
 ToggleMenuBtn.Name = "XenoToggleBtn"
 ToggleMenuBtn.Parent = ScreenGui
 ToggleMenuBtn.Position = UDim2.new(0.01, 0, 0.3, 0)
@@ -48,6 +47,7 @@ ToggleMenuBtn.TextSize = 14
 Instance.new("UICorner", ToggleMenuBtn).CornerRadius = UDim.new(0, 8)
 ToggleMenuBtn.Active = true
 ToggleMenuBtn.Draggable = true
+
 -- ГОЛОВНЕ ВІКНО МЕНЮ
 MainFrame.Name = "BF_Xeno_Tabbed_Menu"
 MainFrame.Parent = ScreenGui
@@ -66,7 +66,7 @@ Title.Text = "Blox Fruits Perfect [Xeno]"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 14
 Title.Font = Enum.Font.SourceSansBold
-
+-- СТИЛІЗАЦІЯ КНОПОК ВКЛАДОК
 local function styleTabSelect(btn, text, xPos)
     btn.Parent = MainFrame
     btn.Position = UDim2.new(xPos, 0, 0.16, 0)
@@ -84,108 +84,98 @@ styleTabSelect(VisualTabBtn, "👁️ Візуал", 0.355)
 styleTabSelect(SettingsTabBtn, "⚙️ Налашт.", 0.67)
 CheatsTabBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
 
--- СИСТЕМА АВТО-КОНТЕЙНЕРІВ (Твій UIListLayout)
+-- СИСТЕМА АВТО-КОНТЕЙНЕРІВ (UIListLayout + UIPadding)
 local function createTabFrame(f, name, visible)
-    f.Name = name f.Parent = MainFrame f.BackgroundTransparency = 1
-    f.Position = UDim2.new(0, 0, 0.32, 0) f.Size = UDim2.new(1, 0, 0.68, 0) f.Visible = visible
-    local layout = Instance.new("UIListLayout", f)
-    layout.SortOrder = Enum.SortOrder.LayoutOrder layout.Padding = UDim.new(0, 5)
-    local padding = Instance.new("UIPadding", f)
-    padding.PaddingTop = UDim.new(0, 4) padding.PaddingLeft = UDim.new(0, 10) padding.PaddingRight = UDim.new(0, 10)
+    f.Name = name 
+    f.Parent = MainFrame 
+    f.BackgroundTransparency = 1
+    f.Position = UDim2.new(0, 0, 0.32, 0) 
+    f.Size = UDim2.new(1, 0, 0.68, 0) 
+    f.Visible = visible
+    
+    local layout = Instance.new("UIListLayout")
+    layout.SortOrder = Enum.SortOrder.LayoutOrder 
+    layout.Padding = UDim.new(0, 5)
+    layout.Parent = f
+    
+    local padding = Instance.new("UIPadding")
+    padding.PaddingTop = UDim.new(0, 4) 
+    padding.PaddingLeft = UDim.new(0, 10) 
+    padding.PaddingRight = UDim.new(0, 10)
+    padding.Parent = f
 end
 
 createTabFrame(CheatsFrame, "CheatsSection", true)
 createTabFrame(VisualFrame, "VisualSection", false)
 createTabFrame(SettingsFrame, "SettingsSection", false)
-
+-- ШАБЛОН СТИЛІЗАЦІЇ КНОПОК
 local function styleButton(btn, parent, text, color)
-    btn.Parent = parent btn.Size = UDim2.new(1, 0, 0, 28)
-    btn.BackgroundColor3 = color or Color3.fromRGB(45, 45, 55) btn.Text = text
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255) btn.TextSize = 12 btn.Font = Enum.Font.SourceSansBold
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 5)
-end
-
-styleButton(ChestBtn, CheatsFrame, "Auto Chest: OFF")
-styleButton(LevelBtn, CheatsFrame, "Auto Level (Не працює)") -- Твоя кнопка з підписом
-styleButton(FlyBtn, CheatsFrame, "Fly Mode: OFF")
-
-styleButton(DayBtn, VisualFrame, "☀️ Особистий День", Color3.fromRGB(230, 126, 34))
-styleButton(NightBtn, VisualFrame, "🌙 Особиста Ніч", Color3.fromRGB(41, 128, 185))
-styleButton(DefaultTimeBtn, VisualFrame, "⌛ Класичний Час", Color3.fromRGB(39, 174, 96))
-styleButton(FruitEspBtn, VisualFrame, "🍓 Fruit Detector: OFF", Color3.fromRGB(142, 68, 173))
--- ГОЛОВНЕ ВІКНО МЕНЮ
-MainFrame.Name = "BF_Xeno_Tabbed_Menu"
-MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-MainFrame.Position = UDim2.new(0.05, 0, 0.3, 0)
-MainFrame.Size = UDim2.new(0, 240, 0, 220)
-MainFrame.Active = true
-MainFrame.Draggable = true
-MainFrame.Visible = true
-Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
-
-Title.Parent = MainFrame
-Title.BackgroundTransparency = 1
-Title.Size = UDim2.new(1, 0, 0, 30)
-Title.Text = "Blox Fruits Perfect [Xeno]"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 14
-Title.Font = Enum.Font.SourceSansBold
-
-local function styleTabSelect(btn, text, xPos)
-    btn.Parent = MainFrame
-    btn.Position = UDim2.new(xPos, 0, 0.16, 0)
-    btn.Size = UDim2.new(0.29, 0, 0, 26)
-    btn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    btn.Parent = parent 
+    btn.Size = UDim2.new(1, 0, 0, 28)
+    btn.BackgroundColor3 = color or Color3.fromRGB(45, 45, 55) 
     btn.Text = text
-    btn.TextColor3 = Color3.fromRGB(200, 200, 200)
-    btn.TextSize = 12
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255) 
+    btn.TextSize = 12 
     btn.Font = Enum.Font.SourceSansBold
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 5)
 end
 
-styleTabSelect(CheatsTabBtn, "⚔️ Чіти", 0.04)
-styleTabSelect(VisualTabBtn, "👁️ Візуал", 0.355)
-styleTabSelect(SettingsTabBtn, "⚙️ Налашт.", 0.67)
-CheatsTabBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
-
--- СИСТЕМА АВТО-КОНТЕЙНЕРІВ (Твій UIListLayout)
-local function createTabFrame(f, name, visible)
-    f.Name = name f.Parent = MainFrame f.BackgroundTransparency = 1
-    f.Position = UDim2.new(0, 0, 0.32, 0) f.Size = UDim2.new(1, 0, 0.68, 0) f.Visible = visible
-    local layout = Instance.new("UIListLayout", f)
-    layout.SortOrder = Enum.SortOrder.LayoutOrder layout.Padding = UDim.new(0, 5)
-    local padding = Instance.new("UIPadding", f)
-    padding.PaddingTop = UDim.new(0, 4) padding.PaddingLeft = UDim.new(0, 10) padding.PaddingRight = UDim.new(0, 10)
-end
-
-createTabFrame(CheatsFrame, "CheatsSection", true)
-createTabFrame(VisualFrame, "VisualSection", false)
-createTabFrame(SettingsFrame, "SettingsSection", false)
-
-local function styleButton(btn, parent, text, color)
-    btn.Parent = parent btn.Size = UDim2.new(1, 0, 0, 28)
-    btn.BackgroundColor3 = color or Color3.fromRGB(45, 45, 55) btn.Text = text
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255) btn.TextSize = 12 btn.Font = Enum.Font.SourceSansBold
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 5)
-end
-
+-- НАПОВНЕННЯ ВКЛАДОК КНОПКАМИ
 styleButton(ChestBtn, CheatsFrame, "Auto Chest: OFF")
-styleButton(LevelBtn, CheatsFrame, "Auto Level (Не працює)") -- Твоя кнопка з підписом
+styleButton(LevelBtn, CheatsFrame, "Auto Level (Не працює)") -- Твоя кнопка в дужках
 styleButton(FlyBtn, CheatsFrame, "Fly Mode: OFF")
 
 styleButton(DayBtn, VisualFrame, "☀️ Особистий День", Color3.fromRGB(230, 126, 34))
 styleButton(NightBtn, VisualFrame, "🌙 Особиста Ніч", Color3.fromRGB(41, 128, 185))
 styleButton(DefaultTimeBtn, VisualFrame, "⌛ Класичний Час", Color3.fromRGB(39, 174, 96))
 styleButton(FruitEspBtn, VisualFrame, "🍓 Fruit Detector: OFF", Color3.fromRGB(142, 68, 173))
--- ЛОГІКА ЗГОРТАННЯ МЕНЮ ЧЕРЕЗ КВАДРАТИК
+
+-- ВЕРСТКА ВКЛАДКИ НАЛАШТУВАНЬ
+SpeedTitle.Parent = SettingsFrame 
+SpeedTitle.BackgroundTransparency = 1 
+SpeedTitle.Size = UDim2.new(1, 0, 0, 15)
+SpeedTitle.Text = "Швидкість польоту:" 
+SpeedTitle.TextColor3 = Color3.fromRGB(200, 200, 200) 
+SpeedTitle.TextSize = 12
+
+local SpeedRow = Instance.new("Frame", SettingsFrame) 
+SpeedRow.BackgroundTransparency = 1 
+SpeedRow.Size = UDim2.new(1, 0, 0, 26)
+
+local rowLayout = Instance.new("UIListLayout", SpeedRow) 
+rowLayout.FillDirection = Enum.FillDirection.Horizontal 
+rowLayout.Padding = UDim.new(0, 8)
+
+SpeedInput.Parent = SpeedRow 
+SpeedInput.Size = UDim2.new(0.45, 0, 1, 0) 
+SpeedInput.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+SpeedInput.Text = "70" 
+SpeedInput.TextColor3 = Color3.fromRGB(255, 255, 255) 
+Instance.new("UICorner", SpeedInput).CornerRadius = UDim.new(0, 5)
+
+styleButton(SetSpeedBtn, SpeedRow, "Зберегти", Color3.fromRGB(52, 73, 94)) 
+SetSpeedBtn.Size = UDim2.new(0.5, 0, 1, 0)
+styleButton(ExitBtn, SettingsFrame, "STOP & DESTROY CHEAT", Color3.fromRGB(192, 57, 43))
+_G.ChestFarm = false
+_G.FlyMode = false
+_G.FlySpeed = 70
+_G.LocalVisualTime = "Default"
+_G.FruitEsp = false
+
+local currentTween, currentBV = nil, nil
+local function stopMovement() 
+    if currentTween then currentTween:Cancel() currentTween = nil end 
+    if currentBV then currentBV:Destroy() currentBV = nil end 
+end
+
+-- ЛОГІКА ЗГОРТАННЯ
 ToggleMenuBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
     ToggleMenuBtn.Text = MainFrame.Visible and "ON" or "OFF"
     ToggleMenuBtn.BackgroundColor3 = MainFrame.Visible and Color3.fromRGB(39, 174, 96) or Color3.fromRGB(192, 57, 43)
 end)
 
--- ТВОЯ ОРИГІНАЛЬНА ФУНКЦІЯ ЛОКАЛЬНОЇ ЗМІНИ НЕБА
+-- ТВІЯ ОРИГІНАЛЬНА РОБОЧА ЗМІНА НЕБА
 local function setLocalSky(timeType)
     _G.LocalVisualTime = timeType
     local sky = Lighting:FindFirstChildOfClass("Sky")
@@ -207,7 +197,7 @@ CheatsTabBtn.MouseButton1Click:Connect(function() CheatsFrame.Visible, VisualFra
 VisualTabBtn.MouseButton1Click:Connect(function() CheatsFrame.Visible, VisualFrame.Visible, SettingsFrame.Visible = false, true, false end)
 SettingsTabBtn.MouseButton1Click:Connect(function() CheatsFrame.Visible, VisualFrame.Visible, SettingsFrame.Visible = false, false, true end)
 
--- ТВІЙ ЖОРСТКИЙ ЦИКЛ КЛІЄНТСЬКОГО БЛОКУВАННЯ ЧАСУ СЕРВЕРА
+-- ТВІЙ ОРИГІНАЛЬНИЙ ЖОРСТКИЙ ЦИКЛ ЧАСУ
 task.spawn(function()
     while task.wait(0.01) do
         if _G.LocalVisualTime == "Day" then
@@ -217,17 +207,24 @@ task.spawn(function()
         end
     end
 end)
-
 local function getClosestChest()
-    local closest, dist = nil, math.huge local Root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") if not Root then return nil end
+    local closest, dist = nil, math.huge
+    local Root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if not Root then return nil end
     for _, obj in pairs(workspace:GetDescendants()) do
         if obj:IsA("TouchTransmitter") and obj.Parent and string.find(obj.Parent.Name, "Chest") then
-            local chest = obj.Parent local part = chest:IsA("BasePart") and chest or chest:FindFirstChildOfClass("BasePart")
-            if part and (Root.Position - part.Position).Magnitude < dist then closest = part; dist = (Root.Position - part.Position).Magnitude end
+            local chest = obj.Parent
+            local part = chest:IsA("BasePart") and chest or chest:FindFirstChildOfClass("BasePart")
+            if part then
+                local d = (Root.Position - part.Position).Magnitude
+                if d < dist then closest = part; dist = d end
+            end
         end
-    end return closest
+    end
+    return closest
 end
--- ЦИКЛ СКРИНЬ (ТВІЙ ОРИГІНАЛЬНИЙ РОБОЧИЙ ФАРМ)
+
+-- ЦИКЛ АВТОФАРМУ СКРИНЬ (ТВІЙ ОРИГІНАЛЬНИЙ РОБОЧИЙ ФАРМ)
 task.spawn(function()
     while ScreenGui.Parent do
         task.wait(0.1)
@@ -242,8 +239,7 @@ task.spawn(function()
         end
     end
 end)
-
--- КОНТРОЛЕР ПЛАВНОГО ПОЛЬОТУ
+-- КОНТРОЛЕР ПЛАВНОГО ПОЛЬОТУ (ДЛЯ ВСІХ МОРІВ)
 task.spawn(function()
     local flyBV, flyBG local UIS = game:GetService("UserInputService")
     while ScreenGui.Parent do
