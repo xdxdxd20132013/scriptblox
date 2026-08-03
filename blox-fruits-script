@@ -48,7 +48,7 @@ Instance.new("UICorner", ToggleMenuBtn).CornerRadius = UDim.new(0, 8)
 ToggleMenuBtn.Active = true
 ToggleMenuBtn.Draggable = true
 
--- НАЛАШТУВАННЯ ГОЛОВНОГО ВІКНА МЕНЮ
+-- НАЛАШТУВАННЯ ГОЛОВНОГО ВІКНО МЕНЮ
 MainFrame.Name = "BF_Xeno_Tabbed_Menu"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
@@ -171,7 +171,7 @@ local function getClosestChest()
         end
     end return closest
 end
--- ВЕЛИЧЕЗНИЙ АКТУАЛЬНИЙ СЕЛЕКТОР КВЕСТІВ (1, 2 ТА 3 МОРЕ ДО 2800 ЛВЛ)
+-- ВЕЛИЧЕЗНИЙ АКТУАЛЬНИЙ СЕЛЕКТОР КВЕСТІВ (ЧАСТИНА 1: 1 ТА 2 МОРЕ)
 local function getMyLevelMobName()
     if not Player:FindFirstChild("Data") or not Player.Data:FindFirstChild("Level") then return "Bandit", "BanditQuest1", 1 end
     local lv = Player.Data.Level.Value
@@ -214,7 +214,6 @@ local function getMyLevelMobName()
     elseif lv < 1400 then return "Snow Trooper", "IceCastleQuest", 2
     elseif lv < 1450 then return "Sea Soldier", "ForgottenQuest", 1
     elseif lv < 1500 then return "Water Commando", "ForgottenQuest", 2
-
     -- --- 3 МОРЕ (До макс 2800) ---
     elseif lv < 1550 then return "Pirate Millionaire", "PortQuest", 1
     elseif lv < 1600 then return "Pistol Billionaire", "PortQuest", 2
@@ -242,6 +241,7 @@ local function takeQuest(questName, questId)
     local remote = game:GetService("ReplicatedStorage"):FindFirstChild("Remotes") and game:GetService("ReplicatedStorage").Remotes:FindFirstChild("CommF_")
     if remote then remote:InvokeServer("StartQuest", questName, questId) end
 end
+
 -- ЦИКЛ ФАРМУ СКРИНЬ
 task.spawn(function()
     while ScreenGui.Parent do
@@ -257,8 +257,7 @@ task.spawn(function()
         end
     end
 end)
-
--- УНІВЕРСАЛЬНИЙ АВТОФАРМ ЛЕВЕЛУ (2 МЕТРИ НАД МОБОМ ДЛЯ 1, 2, 3 МОРЯ)
+-- УНІВЕРСАЛЬНИЙ АВТОФАРМ ЛЕВЕЛУ (1, 2 ТА 3 МОРЕ)
 task.spawn(function()
     local VirtualInputManager = game:GetService("VirtualInputManager")
     while ScreenGui.Parent do
@@ -308,7 +307,7 @@ task.spawn(function()
         else local Root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") if Root and Root:FindFirstChild("FarmVelocity") then Root.FarmVelocity:Destroy() end end
     end
 end)
--- КОНТРОЛЕР ПЛАВНОГО ПОЛЬОТУ
+-- КОНТРОЛЕР ПЛАВНОГО ПОЛЬОТУ (ДЛЯ ВСІХ МОРІВ)
 task.spawn(function()
     local flyBV, flyBG local UIS = game:GetService("UserInputService")
     while ScreenGui.Parent do
@@ -322,32 +321,34 @@ task.spawn(function()
     end
 end)
 
--- ЦИКЛ FRUIT ESP (ДЕТЕКТОР ФРУКТІВ)
+-- НОВИЙ ЦИКЛ FRUIT ESP (ПРАЦЮЄ У ВСІХ МОРЯХ)
 FruitEspBtn.MouseButton1Click:Connect(function() _G.FruitEsp = not _G.FruitEsp FruitEspBtn.Text = "🍓 Fruit Detector: " .. (_G.FruitEsp and "ON" or "OFF") end)
 task.spawn(function()
     while task.wait(1) do
         if _G.FruitEsp then
             for _, v in pairs(workspace:GetChildren()) do
-                if string.find(v.Name, "Fruit") and v:IsA("Tool") and v:FindFirstChild("Handle") then
-                    if not v.Handle:FindFirstChild("FruitXenoBillboard") then
-                        local b = Instance.new("BillboardGui", v.Handle) b.Name = "FruitXenoBillboard" b.Size = UDim2.new(0, 100, 0, 40) b.AlwaysOnTop = true b.ExtentsOffset = Vector3.new(0, 3, 0)
-                        local t = Instance.new("TextLabel", b) t.Size = UDim2.new(1, 0, 1, 0) t.Text = "[🍓 Фрукт на землі]" t.TextColor3 = Color3.fromRGB(255, 0, 100) t.BackgroundTransparency = 1 t.TextSize = 12 t.Font = Enum.Font.SourceSansBold
+                if (v:IsA("Model") or v:IsA("Tool")) and (string.find(v.Name, "Fruit") or v:FindFirstChild("Fruit") or string.find(string.lower(v.Name), "fruit")) then
+                    local targetPart = v:FindFirstChild("Handle") or v:FindFirstChildOfClass("MeshPart") or v:FindFirstChildOfClass("Part")
+                    if targetPart and not targetPart:FindFirstChild("FruitXenoBillboard") then
+                        local b = Instance.new("BillboardGui", targetPart) b.Name = "FruitXenoBillboard" b.Size = UDim2.new(0, 120, 0, 40) b.AlwaysOnTop = true b.ExtentsOffset = Vector3.new(0, 3, 0)
+                        local t = Instance.new("TextLabel", b) t.Size = UDim2.new(1, 0, 1, 0) t.Text = "🍓 [ ФРУКТ НА ЗЕМЛІ ]" t.TextColor3 = Color3.fromRGB(255, 0, 100) t.BackgroundTransparency = 1 t.TextSize = 13 t.Font = Enum.Font.SourceSansBold
+                        local selection = Instance.new("BoxHandleAdornment", targetPart) selection.Name = "FruitXenoGlow" selection.Size = targetPart.Size + Vector3.new(0.5, 0.5, 0.5) selection.Color3 = Color3.fromRGB(255, 0, 100) selection.AlwaysOnTop = true selection.ZIndex = 4 selection.Adornee = targetPart
                     end
                 end
             end
         else
-            for _, v in pairs(workspace:GetChildren()) do if v:IsA("Tool") and v:FindFirstChild("Handle") and v.Handle:FindFirstChild("FruitXenoBillboard") then v.Handle.FruitXenoBillboard:Destroy() end end
+            for _, v in pairs(workspace:GetDescendants()) do if v.Name == "FruitXenoBillboard" or v.Name == "FruitXenoGlow" then v:Destroy() end end
         end
     end
 end)
 
--- ОБРОБНИКИ КНОПОК ТА ЗАВЕРШЕННЯ
+-- ОБРОБНИКИ НАЛАШТУВАНЬ ТА АКТИВАЦІЇ КНОПОК
 SetSpeedBtn.MouseButton1Click:Connect(function() local num = tonumber(SpeedInput.Text) if num then _G.FlySpeed = num SetSpeedBtn.Text = "ОК!" task.wait(0.7) SetSpeedBtn.Text = "Зберегти" else SpeedInput.Text = "Помилка" end end)
 ChestBtn.MouseButton1Click:Connect(function() _G.ChestFarm = not _G.ChestFarm if _G.ChestFarm then _G.LevelFarm = false _G.FlyMode = false LevelBtn.Text = "Auto Level: OFF" FlyBtn.Text = "Fly Mode: OFF" end ChestBtn.Text = "Auto Chest: " .. (_G.ChestFarm and "ON" or "OFF") if not _G.ChestFarm then stopMovement() end end)
 LevelBtn.MouseButton1Click:Connect(function() _G.LevelFarm = not _G.LevelFarm if _G.LevelFarm then _G.ChestFarm = false _G.FlyMode = false ChestBtn.Text = "Auto Chest: OFF" FlyBtn.Text = "Fly Mode: OFF" stopMovement() end LevelBtn.Text = "Auto Level: " .. (_G.LevelFarm and "ON" or "OFF") end)
 FlyBtn.MouseButton1Click:Connect(function() _G.FlyMode = not _G.FlyMode if _G.FlyMode then _G.ChestFarm = false _G.LevelFarm = false ChestBtn.Text = "Auto Chest: OFF" LevelBtn.Text = "Auto Level: OFF" stopMovement() end FlyBtn.Text = "Fly Mode: " .. (_G.FlyMode and "ON" or "OFF") end)
 
 ExitBtn.MouseButton1Click:Connect(function()
-    _G.ChestFarm = false _G.LevelFarm = false _G.FlyMode = false _G.LocalVisualTime = "Default" _G.FruitEsp = false stopMovement() local Root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    _G.ChestFarm = false _G.LevelFarm = false _G.FlyMode = false _G.LocalVisualTime = "Default" _G.FruitEsp = false stopMovement() for _, v in pairs(workspace:GetDescendants()) do if v.Name == "FruitXenoBillboard" or v.Name == "FruitXenoGlow" then v:Destroy() end end local Root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
     if Root then if Root:FindFirstChild("FarmVelocity") then Root.FarmVelocity:Destroy() end if Root:FindFirstChild("XenoFlyVelocity") then Root.XenoFlyVelocity:Destroy() end if Root:FindFirstChild("XenoFlyGyro") then Root.XenoFlyGyro:Destroy() end end ScreenGui:Destroy()
 end)
