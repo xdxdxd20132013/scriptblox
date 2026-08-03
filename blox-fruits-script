@@ -34,21 +34,7 @@ local Player = game:GetService("Players").LocalPlayer
 local Lighting = game:GetService("Lighting")
 ScreenGui.Parent = game:GetService("CoreGui") or Player:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
--- НАЛАШТУВАННЯ КНОПКИ-КВАДРАТИКА ДЛЯ ЗГОРТАННЯ
-ToggleMenuBtn.Name = "XenoToggleBtn"
-ToggleMenuBtn.Parent = ScreenGui
-ToggleMenuBtn.Position = UDim2.new(0.01, 0, 0.3, 0)
-ToggleMenuBtn.Size = UDim2.new(0, 45, 0, 45)
-ToggleMenuBtn.BackgroundColor3 = Color3.fromRGB(39, 174, 96)
-ToggleMenuBtn.Text = "ON"
-ToggleMenuBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleMenuBtn.Font = Enum.Font.SourceSansBold
-ToggleMenuBtn.TextSize = 14
-Instance.new("UICorner", ToggleMenuBtn).CornerRadius = UDim.new(0, 8)
-ToggleMenuBtn.Active = true
-ToggleMenuBtn.Draggable = true
-
--- НАЛАШТУВАННЯ ГОЛОВНОГО ВІКНО МЕНЮ
+-- ГОЛОВНЕ ВІКНО МЕНЮ
 MainFrame.Name = "BF_Xeno_Tabbed_Menu"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
@@ -67,6 +53,7 @@ Title.Text = "Blox Fruits Perfect [Xeno]"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 14
 Title.Font = Enum.Font.SourceSansBold
+
 -- СТИЛІЗАЦІЯ КНОПОК ВКЛАДОК
 local function styleTabSelect(btn, text, xPos)
     btn.Parent = MainFrame
@@ -100,7 +87,7 @@ end
 createTabFrame(CheatsFrame, "CheatsSection", true)
 createTabFrame(VisualFrame, "VisualSection", false)
 createTabFrame(SettingsFrame, "SettingsSection", false)
--- ТВОЙ ОПТИМІЗОВАНИЙ ШАБЛОН КНОПОК (Без yPos)
+-- ШАБЛОН АДАПТИВНИХ КНОПОК (Без використання yPos)
 local function styleButton(btn, parent, text, color)
     btn.Parent = parent btn.Size = UDim2.new(1, 0, 0, 28)
     btn.BackgroundColor3 = color or Color3.fromRGB(45, 45, 55) btn.Text = text
@@ -108,8 +95,9 @@ local function styleButton(btn, parent, text, color)
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 5)
 end
 
+-- ДОДАВАННЯ КНОПОК У ВКЛАДКИ
 styleButton(ChestBtn, CheatsFrame, "Auto Chest: OFF")
-styleButton(LevelBtn, CheatsFrame, "Auto Level: OFF")
+styleButton(LevelBtn, CheatsFrame, "Auto Level (Не працює)") -- Твоя кнопка в дужках
 styleButton(FlyBtn, CheatsFrame, "Fly Mode: OFF")
 
 styleButton(DayBtn, VisualFrame, "☀️ Особистий День", Color3.fromRGB(230, 126, 34))
@@ -117,6 +105,7 @@ styleButton(NightBtn, VisualFrame, "🌙 Особиста Ніч", Color3.fromRG
 styleButton(DefaultTimeBtn, VisualFrame, "⌛ Класичний Час", Color3.fromRGB(39, 174, 96))
 styleButton(FruitEspBtn, VisualFrame, "🍓 Fruit Detector: OFF", Color3.fromRGB(142, 68, 173))
 
+-- ВЕРСТКА ВКЛАДКИ НАЛАШТУВАНЬ
 SpeedTitle.Parent = SettingsFrame SpeedTitle.BackgroundTransparency = 1 SpeedTitle.Size = UDim2.new(1, 0, 0, 15)
 SpeedTitle.Text = "Швидкість польоту:" SpeedTitle.TextColor3 = Color3.fromRGB(200, 200, 200) SpeedTitle.TextSize = 12
 
@@ -129,7 +118,14 @@ SpeedInput.Text = "70" SpeedInput.TextColor3 = Color3.fromRGB(255, 255, 255) Ins
 styleButton(SetSpeedBtn, SpeedRow, "Зберегти", Color3.fromRGB(52, 73, 94)) SetSpeedBtn.Size = UDim2.new(0.5, 0, 1, 0)
 styleButton(ExitBtn, SettingsFrame, "STOP & DESTROY CHEAT", Color3.fromRGB(192, 57, 43))
 
-_G.ChestFarm = false _G.LevelFarm = false _G.FlyMode = false _G.FlySpeed = 70 _G.LocalVisualTime = "Default" _G.FruitEsp = false
+-- ПОЧАТКОВІ СТАНОВІ ЗМІННІ
+_G.ChestFarm = false
+_G.LevelFarm = false
+_G.FlyMode = false
+_G.FlySpeed = 70
+_G.LocalVisualTime = "Default"
+_G.FruitEsp = false
+
 local currentTween, currentBV = nil, nil
 local function stopMovement() if currentTween then currentTween:Cancel() currentTween = nil end if currentBV then currentBV:Destroy() currentBV = nil end end
 -- ЛОГІКА ЗГОРТАННЯ
@@ -139,11 +135,21 @@ ToggleMenuBtn.MouseButton1Click:Connect(function()
     ToggleMenuBtn.BackgroundColor3 = MainFrame.Visible and Color3.fromRGB(39, 174, 96) or Color3.fromRGB(192, 57, 43)
 end)
 
--- ЛОГІКА ЗМІНИ ЧАСУ ДОБИ
+-- ЛОГІКА ЗМІНИ ЧАСУ ДОБИ (ОЧИЩЕННЯ АРТЕФАКТІВ)
 local function setLocalSky(timeType)
     _G.LocalVisualTime = timeType local sky = Lighting:FindFirstChildOfClass("Sky") if sky and timeType ~= "Default" then sky:Destroy() end
-    if timeType == "Day" then Lighting.ClockTime = 14 Lighting.GeographicLatitude = 41.5
-    elseif timeType == "Night" then Lighting.ClockTime = 0 Lighting.GeographicLatitude = 0 end
+    if timeType == "Day" then 
+        Lighting.ClockTime = 14 Lighting.GeographicLatitude = 41.5
+        Lighting.FogEnd = 100000
+    elseif timeType == "Night" then 
+        Lighting.ClockTime = 0 Lighting.GeographicLatitude = 0
+        Lighting.FogColor = Color3.fromRGB(0, 0, 0)
+        Lighting.FogEnd = 999999
+        Lighting.Ambient = Color3.fromRGB(30, 30, 35)
+        Lighting.OutdoorAmbient = Color3.fromRGB(15, 15, 20)
+        local bloom = Lighting:FindFirstChildOfClass("BloomEffect") if bloom then bloom.Enabled = false end
+        local blur = Lighting:FindFirstChildOfClass("BlurEffect") if blur then blur.Enabled = false end
+    end
 end
 
 DayBtn.MouseButton1Click:Connect(function() setLocalSky("Day") end)
@@ -154,11 +160,16 @@ CheatsTabBtn.MouseButton1Click:Connect(function() CheatsFrame.Visible, VisualFra
 VisualTabBtn.MouseButton1Click:Connect(function() CheatsFrame.Visible, VisualFrame.Visible, SettingsFrame.Visible = false, true, false end)
 SettingsTabBtn.MouseButton1Click:Connect(function() CheatsFrame.Visible, VisualFrame.Visible, SettingsFrame.Visible = false, false, true end)
 
--- ЦИКЛ КЛІЄНТСЬКОГО ФРИЗУ ЧАСУ
+-- ЦИКЛ КЛІЄНТСЬКОГО ФРИЗУ ЧАСУ ТА ЗАХИСТУ ВІД БЛИМАННЯ
 task.spawn(function()
     while task.wait(0.01) do
-        if _G.LocalVisualTime == "Day" then Lighting.ClockTime = 14
-        elseif _G.LocalVisualTime == "Night" then Lighting.ClockTime = 0 end
+        if _G.LocalVisualTime == "Day" then 
+            Lighting.ClockTime = 14
+        elseif _G.LocalVisualTime == "Night" then 
+            Lighting.ClockTime = 0
+            Lighting.Brightness = 0
+            Lighting.ExposureCompensation = -0.5
+        end
     end
 end)
 
@@ -171,158 +182,82 @@ local function getClosestChest()
         end
     end return closest
 end
--- ВЕЛИЧЕЗНИЙ АКТУАЛЬНИЙ СЕЛЕКТОР КВЕСТІВ (ЧАСТИНА 1: 1 ТА 2 МОРЕ)
-local function getMyLevelMobName()
-    if not Player:FindFirstChild("Data") or not Player.Data:FindFirstChild("Level") then return "Bandit", "BanditQuest1", 1 end
-    local lv = Player.Data.Level.Value
-
-    -- --- 1 МОРЕ ---
-    if lv < 10 then return "Bandit", "BanditQuest1", 1
-    elseif lv < 15 then return "Monkey", "JungleQuest", 1
-    elseif lv < 30 then return "Gorilla", "JungleQuest", 2
-    elseif lv < 60 then return "Pirate", "PirateIslandQuest", 1
-    elseif lv < 90 then return "Brute", "PirateIslandQuest", 2
-    elseif lv < 120 then return "Snow Soldier", "SnowQuest", 1
-    elseif lv < 150 then return "Snowman", "SnowQuest", 2
-    elseif lv < 175 then return "Chief Petty Officer", "MarineQuest2", 1
-    elseif lv < 225 then return "Sky Bandit", "SkyQuest", 1
-    elseif lv < 250 then return "Dark Master", "SkyQuest", 2
-    elseif lv < 300 then return "Prisoner", "PrisonQuest", 1
-    elseif lv < 350 then return "Magma Ninja", "MagmaQuest", 1
-    elseif lv < 425 then return "Fishman Warrior", "FishmanQuest", 1
-    elseif lv < 450 then return "Fishman Commando", "FishmanQuest", 2
-    elseif lv < 525 then return "God's Guard", "SkyQuest2", 1
-    elseif lv < 575 then return "Shandra", "SkyQuest2", 2
-    elseif lv < 625 then return "Royal Squad", "SkyQuest3", 1
-    elseif lv < 700 then return "Royal Soldier", "SkyQuest3", 2
-
-    -- --- 2 МОРЕ ---
-    elseif lv < 725 then return "Raider", "Area1Quest", 1
-    elseif lv < 775 then return "Mercenary", "Area1Quest", 2
-    elseif lv < 800 then return "Swan Pirate", "Area2Quest", 1
-    elseif lv < 875 then return "Factory Worker", "Area3Quest", 1
-    elseif lv < 925 then return "Giant Zombie", "GraveyardQuest", 1
-    elseif lv < 950 then return "Reborn Skeleton", "GraveyardQuest", 2
-    elseif lv < 1000 then return "Military Soldier", "SnowMountainQuest", 1
-    elseif lv < 1050 then return "Snow Scout", "SnowMountainQuest", 2
-    elseif lv < 1100 then return "Ice Soldier", "ColdQuest", 1
-    elseif lv < 1150 then return "Lava Pirate", "HotQuest", 1
-    elseif lv < 1200 then return "Core Bird", "HotQuest", 2
-    elseif lv < 1250 then return "Ship Pirate", "CursedShipQuest", 1
-    elseif lv < 1300 then return "Ship Engineer", "CursedShipQuest", 2
-    elseif lv < 1350 then return "Arctic Warrior", "IceCastleQuest", 1
-    elseif lv < 1400 then return "Snow Trooper", "IceCastleQuest", 2
-    elseif lv < 1450 then return "Sea Soldier", "ForgottenQuest", 1
-    elseif lv < 1500 then return "Water Commando", "ForgottenQuest", 2
-    -- --- 3 МОРЕ (До макс 2800) ---
-    elseif lv < 1550 then return "Pirate Millionaire", "PortQuest", 1
-    elseif lv < 1600 then return "Pistol Billionaire", "PortQuest", 2
-    elseif lv < 1650 then return "Dragon Crew Warrior", "AmazonQuest", 1
-    elseif lv < 1700 then return "Dragon Crew Archer", "AmazonQuest", 2
-    elseif lv < 1750 then return "Female Island Warrior", "AmazonQuest3", 1
-    elseif lv < 1825 then return "Giant Ginger", "TurtleQuest", 1
-    elseif lv < 1900 then return "Fishman Raider", "TurtleQuest", 2
-    elseif lv < 1975 then return "Mythological Pirate", "TurtleQuest3", 1
-    elseif lv < 2025 then return "Jungle Pirate", "TurtleQuest4", 1
-    elseif lv < 2075 then return "Reborn Pirate", "HauntedQuest1", 1
-    elseif lv < 2125 then return "Demonic Soul", "HauntedQuest2", 1
-    elseif lv < 2200 then return "Cookie Commando", "IceCreamIslandQuest", 1
-    elseif lv < 2275 then return "Cake Guard", "CakeQuest1", 1
-    elseif lv < 2350 then return "Baking Sergeant", "CakeQuest2", 1
-    elseif lv < 2425 then return "Cocoa Warrior", "ChocolateQuest", 1
-    elseif lv < 2500 then return "Chocolate Squad", "ChocolateQuest2", 1
-    elseif lv < 2575 then return "Sweets Guard", "SweetQuest1", 1
-    elseif lv < 2650 then return "Chocolate Candy", "SweetQuest2", 1
-    elseif lv < 2725 then return "Candy Commando", "CandySeaQuest1", 1
-    else return "Sugar Overlord", "CandySeaQuest2", 1 end
-end
-
-local function takeQuest(questName, questId)
-    local remote = game:GetService("ReplicatedStorage"):FindFirstChild("Remotes") and game:GetService("ReplicatedStorage").Remotes:FindFirstChild("CommF_")
-    if remote then remote:InvokeServer("StartQuest", questName, questId) end
-end
-
--- ЦИКЛ ФАРМУ СКРИНЬ
+-- ЦИКЛ АВТОФАРМУ СКРИНЬ (Працює у всіх морях)
 task.spawn(function()
     while ScreenGui.Parent do
         task.wait(0.1)
         if _G.ChestFarm then
-            local Root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") local chest = getClosestChest()
+            local Root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") 
+            local chest = getClosestChest()
             if chest and Root and _G.ChestFarm then
-                stopMovement() currentBV = Instance.new("BodyVelocity", Root) currentBV.Velocity = Vector3.new(0,0,0) currentBV.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+                stopMovement() 
+                currentBV = Instance.new("BodyVelocity", Root) 
+                currentBV.Velocity = Vector3.new(0,0,0) 
+                currentBV.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+                
                 currentTween = game:GetService("TweenService"):Create(Root, TweenInfo.new((Root.Position - chest.Position).Magnitude / 350, Enum.EasingStyle.Linear), {CFrame = chest.CFrame})
-                currentTween:Play() local completed = false local cConn = currentTween.Completed:Connect(function() completed = true end)
-                while not completed and _G.ChestFarm do task.wait(0.01) end cConn:Disconnect() stopMovement() if _G.ChestFarm then task.wait(0.15) end
+                currentTween:Play() 
+                
+                local completed = false 
+                local cConn = currentTween.Completed:Connect(function() completed = true end)
+                while not completed and _G.ChestFarm do task.wait(0.01) end 
+                cConn:Disconnect() 
+                
+                stopMovement() 
+                if _G.ChestFarm then task.wait(0.15) end
             end
         end
     end
 end)
--- УНІВЕРСАЛЬНИЙ АВТОФАРМ ЛЕВЕЛУ (1, 2 ТА 3 МОРЕ)
+
+-- КОНТРОЛЕР ПЛАВНОГО ПОЛЬОТУ
 task.spawn(function()
-    local VirtualInputManager = game:GetService("VirtualInputManager")
+    local flyBV, flyBG 
+    local UIS = game:GetService("UserInputService")
     while ScreenGui.Parent do
-        task.wait(0.02)
-        if _G.LevelFarm then
-            pcall(function()
-                local Character = Player.Character local Root = Character and Character:FindFirstChild("HumanoidRootPart") local Humanoid = Character and Character:FindFirstChild("Humanoid")
-                if not Root or not Humanoid or Humanoid.Health <= 0 then return end
-                
-                local currentTool = Character:FindFirstChildOfClass("Tool")
-                if not currentTool then
-                    for _, tool in pairs(Player.Backpack:GetChildren()) do
-                        if tool:IsA("Tool") and (tool:FindFirstChild("Animate") or tool:FindFirstChild("Skill") or string.find(string.lower(tool.Name), "sword") or tool.Name == "Combat" or string.find(string.lower(tool.Name), "style")) then
-                            Humanoid:EquipTool(tool) break
-                        end
-                    end
-                end
-                
-                local targetMobName, questName, questId = getMyLevelMobName()
-                local hasQuest = Player.PlayerGui:FindFirstChild("Main") and Player.PlayerGui.Main:FindFirstChild("Quest") and Player.PlayerGui.Main.Quest.Visible
-                if not hasQuest then takeQuest(questName, questId) task.wait(0.3) return end
-                
-                local mob = nil
-                if workspace:FindFirstChild("Enemies") then
-                    for _, enemy in pairs(workspace.Enemies:GetChildren()) do if enemy.Name == targetMobName and enemy:FindFirstChild("HumanoidRootPart") and enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 then mob = enemy break end end
-                end
-                if not mob then
-                    for _, enemy in pairs(workspace:GetChildren()) do if enemy.Name == targetMobName and enemy:FindFirstChild("HumanoidRootPart") and enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 then mob = enemy break end end
-                end
-                
-                if mob and _G.LevelFarm then
-                    stopMovement() Root.CFrame = mob.HumanoidRootPart.CFrame * CFrame.new(0, 2, 0)
-                    if not Root:FindFirstChild("FarmVelocity") then
-                        local bv = Instance.new("BodyVelocity") bv.Name = "FarmVelocity" bv.Velocity = Vector3.new(0,0,0) bv.MaxForce = Vector3.new(9e9, 9e9, 9e9) bv.Parent = Root
-                    end
-                    for _, otherEnemy in pairs(workspace:GetChildren()) do
-                        if otherEnemy.Name == targetMobName and otherEnemy ~= mob and otherEnemy:FindFirstChild("HumanoidRootPart") then if (mob.HumanoidRootPart.Position - otherEnemy.HumanoidRootPart.Position).Magnitude < 45 then otherEnemy.HumanoidRootPart.CFrame = mob.HumanoidRootPart.CFrame otherEnemy.HumanoidRootPart.CanCollide = false end end
-                    end
-                    if workspace:FindFirstChild("Enemies") then
-                        for _, otherEnemy in pairs(workspace.Enemies:GetChildren()) do
-                            if otherEnemy.Name == targetMobName and otherEnemy ~= mob and otherEnemy:FindFirstChild("HumanoidRootPart") then if (mob.HumanoidRootPart.Position - otherEnemy.HumanoidRootPart.Position).Magnitude < 45 then otherEnemy.HumanoidRootPart.CFrame = mob.HumanoidRootPart.CFrame otherEnemy.HumanoidRootPart.CanCollide = false end end
-                        end
-                    end
-                    VirtualInputManager:ClickButton1(Vector2.new(0, 0))
-                else if Root and Root:FindFirstChild("FarmVelocity") then Root.FarmVelocity:Destroy() end end
-            end)
-        else local Root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") if Root and Root:FindFirstChild("FarmVelocity") then Root.FarmVelocity:Destroy() end end
+        task.wait() 
+        local Character = Player.Character 
+        local Root = Character and Character:FindFirstChild("HumanoidRootPart") 
+        local Humanoid = Character and Character:FindFirstChild("Humanoid") 
+        local Camera = workspace.CurrentCamera
+        
+        if _G.FlyMode and Root and Humanoid and Camera then
+            if not flyBV then 
+                flyBV = Instance.new("BodyVelocity", Root) 
+                flyBV.Name = "XenoFlyVelocity" 
+                flyBV.MaxForce = Vector3.new(9e9, 9e9, 9e9) 
+                flyBG = Instance.new("BodyGyro", Root) 
+                flyBG.Name = "XenoFlyGyro" 
+                flyBG.MaxTorque = Vector3.new(9e9, 9e9, 9e9) 
+            end
+            
+            flyBG.CFrame = Camera.CFrame 
+            local direction = Humanoid.MoveDirection 
+            local velocity = direction * _G.FlySpeed
+            
+            if UIS:IsKeyDown(Enum.KeyCode.Space) then 
+                velocity = velocity + Vector3.new(0, _G.FlySpeed, 0) 
+            elseif UIS:IsKeyDown(Enum.KeyCode.LeftShift) then 
+                velocity = velocity + Vector3.new(0, -_G.FlySpeed, 0) 
+            end
+            
+            if direction.Magnitude == 0 and not UIS:IsKeyDown(Enum.KeyCode.Space) and not UIS:IsKeyDown(Enum.KeyCode.LeftShift) then 
+                flyBV.Velocity = Vector3.new(0, 0.1, 0) 
+            else 
+                flyBV.Velocity = velocity 
+            end
+        else 
+            if flyBV then flyBV:Destroy() flyBV = nil end 
+            if flyBG then flyBG:Destroy() flyBG = nil end 
+        end
     end
 end)
--- КОНТРОЛЕР ПЛАВНОГО ПОЛЬОТУ (ДЛЯ ВСІХ МОРІВ)
-task.spawn(function()
-    local flyBV, flyBG local UIS = game:GetService("UserInputService")
-    while ScreenGui.Parent do
-        task.wait() local Character = Player.Character local Root = Character and Character:FindFirstChild("HumanoidRootPart") local Humanoid = Character and Character:FindFirstChild("Humanoid") local Camera = workspace.CurrentCamera
-        if _G.FlyMode and Root and Humanoid and Camera then
-            if not flyBV then flyBV = Instance.new("BodyVelocity", Root) flyBV.Name = "XenoFlyVelocity" flyBV.MaxForce = Vector3.new(9e9, 9e9, 9e9) flyBG = Instance.new("BodyGyro", Root) flyBG.Name = "XenoFlyGyro" flyBG.MaxTorque = Vector3.new(9e9, 9e9, 9e9) end
-            flyBG.CFrame = Camera.CFrame local direction = Humanoid.MoveDirection local velocity = direction * _G.FlySpeed
-            if UIS:IsKeyDown(Enum.KeyCode.Space) then velocity = velocity + Vector3.new(0, _G.FlySpeed, 0) elseif UIS:IsKeyDown(Enum.KeyCode.LeftShift) then velocity = velocity + Vector3.new(0, -_G.FlySpeed, 0) end
-            if direction.Magnitude == 0 and not UIS:IsKeyDown(Enum.KeyCode.Space) and not UIS:IsKeyDown(Enum.KeyCode.LeftShift) then flyBV.Velocity = Vector3.new(0, 0.1, 0) else flyBV.Velocity = velocity end
-        else if flyBV then flyBV:Destroy() flyBV = nil end if flyBG then flyBG:Destroy() flyBG = nil end end
-    end
+-- ЦИКЛ FRUIT ESP (НОВИЙ ДЕТЕКТОР ФРУКТІВ)
+FruitEspBtn.MouseButton1Click:Connect(function() 
+    _G.FruitEsp = not _G.FruitEsp 
+    FruitEspBtn.Text = "🍓 Fruit Detector: " .. (_G.FruitEsp and "ON" or "OFF") 
 end)
 
--- НОВИЙ ЦИКЛ FRUIT ESP (ПРАЦЮЄ У ВСІХ МОРЯХ)
-FruitEspBtn.MouseButton1Click:Connect(function() _G.FruitEsp = not _G.FruitEsp FruitEspBtn.Text = "🍓 Fruit Detector: " .. (_G.FruitEsp and "ON" or "OFF") end)
 task.spawn(function()
     while task.wait(1) do
         if _G.FruitEsp then
@@ -342,13 +277,13 @@ task.spawn(function()
     end
 end)
 
--- ОБРОБНИКИ НАЛАШТУВАНЬ ТА АКТИВАЦІЇ КНОПОК
+-- ОБРОБНИКИ КНОПОК ТА ЗАКРИТТЯ СЦЕНАРИЮ
 SetSpeedBtn.MouseButton1Click:Connect(function() local num = tonumber(SpeedInput.Text) if num then _G.FlySpeed = num SetSpeedBtn.Text = "ОК!" task.wait(0.7) SetSpeedBtn.Text = "Зберегти" else SpeedInput.Text = "Помилка" end end)
-ChestBtn.MouseButton1Click:Connect(function() _G.ChestFarm = not _G.ChestFarm if _G.ChestFarm then _G.LevelFarm = false _G.FlyMode = false LevelBtn.Text = "Auto Level: OFF" FlyBtn.Text = "Fly Mode: OFF" end ChestBtn.Text = "Auto Chest: " .. (_G.ChestFarm and "ON" or "OFF") if not _G.ChestFarm then stopMovement() end end)
-LevelBtn.MouseButton1Click:Connect(function() _G.LevelFarm = not _G.LevelFarm if _G.LevelFarm then _G.ChestFarm = false _G.FlyMode = false ChestBtn.Text = "Auto Chest: OFF" FlyBtn.Text = "Fly Mode: OFF" stopMovement() end LevelBtn.Text = "Auto Level: " .. (_G.LevelFarm and "ON" or "OFF") end)
-FlyBtn.MouseButton1Click:Connect(function() _G.FlyMode = not _G.FlyMode if _G.FlyMode then _G.ChestFarm = false _G.LevelFarm = false ChestBtn.Text = "Auto Chest: OFF" LevelBtn.Text = "Auto Level: OFF" stopMovement() end FlyBtn.Text = "Fly Mode: " .. (_G.FlyMode and "ON" or "OFF") end)
+ChestBtn.MouseButton1Click:Connect(function() _G.ChestFarm = not _G.ChestFarm if _G.ChestFarm then _G.FlyMode = false FlyBtn.Text = "Fly Mode: OFF" end ChestBtn.Text = "Auto Chest: " .. (_G.ChestFarm and "ON" or "OFF") if not _G.ChestFarm then stopMovement() end end)
+LevelBtn.MouseButton1Click:Connect(function() print("Кнопка Auto Level зараз відключена") end) -- Заглушка, щоб гра не вилітала
+FlyBtn.MouseButton1Click:Connect(function() _G.FlyMode = not _G.FlyMode if _G.FlyMode then _G.ChestFarm = false ChestBtn.Text = "Auto Chest: OFF" stopMovement() end FlyBtn.Text = "Fly Mode: " .. (_G.FlyMode and "ON" or "OFF") end)
 
 ExitBtn.MouseButton1Click:Connect(function()
-    _G.ChestFarm = false _G.LevelFarm = false _G.FlyMode = false _G.LocalVisualTime = "Default" _G.FruitEsp = false stopMovement() for _, v in pairs(workspace:GetDescendants()) do if v.Name == "FruitXenoBillboard" or v.Name == "FruitXenoGlow" then v:Destroy() end end local Root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if Root then if Root:FindFirstChild("FarmVelocity") then Root.FarmVelocity:Destroy() end if Root:FindFirstChild("XenoFlyVelocity") then Root.XenoFlyVelocity:Destroy() end if Root:FindFirstChild("XenoFlyGyro") then Root.XenoFlyGyro:Destroy() end end ScreenGui:Destroy()
+    _G.ChestFarm = false _G.FlyMode = false _G.LocalVisualTime = "Default" _G.FruitEsp = false stopMovement() for _, v in pairs(workspace:GetDescendants()) do if v.Name == "FruitXenoBillboard" or v.Name == "FruitXenoGlow" then v:Destroy() end end local Root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if Root then if Root:FindFirstChild("XenoFlyVelocity") then Root.XenoFlyVelocity:Destroy() end if Root:FindFirstChild("XenoFlyGyro") then Root.XenoFlyGyro:Destroy() end end ScreenGui:Destroy()
 end)
