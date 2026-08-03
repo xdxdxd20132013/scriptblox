@@ -34,6 +34,20 @@ local Player = game:GetService("Players").LocalPlayer
 local Lighting = game:GetService("Lighting")
 ScreenGui.Parent = game:GetService("CoreGui") or Player:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
+-- КНОПКА-КВАДРАТИК ON/OFF (ЗГОРТАННЯ)
+ToggleMenuBtn.Name = "XenoToggleBtn"
+ToggleMenuBtn.Parent = ScreenGui
+ToggleMenuBtn.Position = UDim2.new(0.01, 0, 0.3, 0)
+ToggleMenuBtn.Size = UDim2.new(0, 45, 0, 45)
+ToggleMenuBtn.BackgroundColor3 = Color3.fromRGB(39, 174, 96)
+ToggleMenuBtn.Text = "ON"
+ToggleMenuBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleMenuBtn.Font = Enum.Font.SourceSansBold
+ToggleMenuBtn.TextSize = 14
+Instance.new("UICorner", ToggleMenuBtn).CornerRadius = UDim.new(0, 8)
+ToggleMenuBtn.Active = true
+ToggleMenuBtn.Draggable = true
+
 -- ГОЛОВНЕ ВІКНО МЕНЮ
 MainFrame.Name = "BF_Xeno_Tabbed_Menu"
 MainFrame.Parent = ScreenGui
@@ -45,7 +59,6 @@ MainFrame.Draggable = true
 MainFrame.Visible = true
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
 
--- ЗАГОЛОВОК
 Title.Parent = MainFrame
 Title.BackgroundTransparency = 1
 Title.Size = UDim2.new(1, 0, 0, 30)
@@ -53,8 +66,6 @@ Title.Text = "Blox Fruits Perfect [Xeno]"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 14
 Title.Font = Enum.Font.SourceSansBold
-
--- СТИЛІЗАЦІЯ КНОПОК ВКЛАДОК
 local function styleTabSelect(btn, text, xPos)
     btn.Parent = MainFrame
     btn.Position = UDim2.new(xPos, 0, 0.16, 0)
@@ -72,14 +83,12 @@ styleTabSelect(VisualTabBtn, "👁️ Візуал", 0.355)
 styleTabSelect(SettingsTabBtn, "⚙️ Налашт.", 0.67)
 CheatsTabBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
 
--- СИСТЕМА АВТО-КОНТЕЙНЕРІВ (Твій UIListLayout)
+-- СИСТЕМА АВТО-КОНТЕЙНЕРІВ (UIListLayout)
 local function createTabFrame(f, name, visible)
     f.Name = name f.Parent = MainFrame f.BackgroundTransparency = 1
     f.Position = UDim2.new(0, 0, 0.32, 0) f.Size = UDim2.new(1, 0, 0.68, 0) f.Visible = visible
-    
     local layout = Instance.new("UIListLayout", f)
     layout.SortOrder = Enum.SortOrder.LayoutOrder layout.Padding = UDim.new(0, 5)
-    
     local padding = Instance.new("UIPadding", f)
     padding.PaddingTop = UDim.new(0, 4) padding.PaddingLeft = UDim.new(0, 10) padding.PaddingRight = UDim.new(0, 10)
 end
@@ -87,7 +96,6 @@ end
 createTabFrame(CheatsFrame, "CheatsSection", true)
 createTabFrame(VisualFrame, "VisualSection", false)
 createTabFrame(SettingsFrame, "SettingsSection", false)
--- ШАБЛОН АДАПТИВНИХ КНОПОК (Без використання yPos)
 local function styleButton(btn, parent, text, color)
     btn.Parent = parent btn.Size = UDim2.new(1, 0, 0, 28)
     btn.BackgroundColor3 = color or Color3.fromRGB(45, 45, 55) btn.Text = text
@@ -95,9 +103,8 @@ local function styleButton(btn, parent, text, color)
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 5)
 end
 
--- ДОДАВАННЯ КНОПОК У ВКЛАДКИ
 styleButton(ChestBtn, CheatsFrame, "Auto Chest: OFF")
-styleButton(LevelBtn, CheatsFrame, "Auto Level (Не працює)") -- Твоя кнопка в дужках
+styleButton(LevelBtn, CheatsFrame, "Auto Level (Не працює)")
 styleButton(FlyBtn, CheatsFrame, "Fly Mode: OFF")
 
 styleButton(DayBtn, VisualFrame, "☀️ Особистий День", Color3.fromRGB(230, 126, 34))
@@ -105,7 +112,6 @@ styleButton(NightBtn, VisualFrame, "🌙 Особиста Ніч", Color3.fromRG
 styleButton(DefaultTimeBtn, VisualFrame, "⌛ Класичний Час", Color3.fromRGB(39, 174, 96))
 styleButton(FruitEspBtn, VisualFrame, "🍓 Fruit Detector: OFF", Color3.fromRGB(142, 68, 173))
 
--- ВЕРСТКА ВКЛАДКИ НАЛАШТУВАНЬ
 SpeedTitle.Parent = SettingsFrame SpeedTitle.BackgroundTransparency = 1 SpeedTitle.Size = UDim2.new(1, 0, 0, 15)
 SpeedTitle.Text = "Швидкість польоту:" SpeedTitle.TextColor3 = Color3.fromRGB(200, 200, 200) SpeedTitle.TextSize = 12
 
@@ -118,58 +124,29 @@ SpeedInput.Text = "70" SpeedInput.TextColor3 = Color3.fromRGB(255, 255, 255) Ins
 styleButton(SetSpeedBtn, SpeedRow, "Зберегти", Color3.fromRGB(52, 73, 94)) SetSpeedBtn.Size = UDim2.new(0.5, 0, 1, 0)
 styleButton(ExitBtn, SettingsFrame, "STOP & DESTROY CHEAT", Color3.fromRGB(192, 57, 43))
 
--- ПОЧАТКОВІ СТАНОВІ ЗМІННІ
-_G.ChestFarm = false
-_G.LevelFarm = false
-_G.FlyMode = false
-_G.FlySpeed = 70
-_G.LocalVisualTime = "Default"
-_G.FruitEsp = false
-
+_G.ChestFarm = false _G.FlyMode = false _G.FlySpeed = 70 _G.LocalVisualTime = "Default" _G.FruitEsp = false
 local currentTween, currentBV = nil, nil
 local function stopMovement() if currentTween then currentTween:Cancel() currentTween = nil end if currentBV then currentBV:Destroy() currentBV = nil end end
--- ЛОГІКА ЗГОРТАННЯ
+-- ЛОГІКА ЗГОРТАННЯ МЕНЮ ЧЕРЕЗ КВАДРАТИК
 ToggleMenuBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
     ToggleMenuBtn.Text = MainFrame.Visible and "ON" or "OFF"
     ToggleMenuBtn.BackgroundColor3 = MainFrame.Visible and Color3.fromRGB(39, 174, 96) or Color3.fromRGB(192, 57, 43)
 end)
 
--- ЛОГІКА ЗМІНИ ЧАСУ ДОБИ (ОЧИЩЕННЯ АРТЕФАКТІВ)
-local function setLocalSky(timeType)
-    _G.LocalVisualTime = timeType local sky = Lighting:FindFirstChildOfClass("Sky") if sky and timeType ~= "Default" then sky:Destroy() end
-    if timeType == "Day" then 
-        Lighting.ClockTime = 14 Lighting.GeographicLatitude = 41.5
-        Lighting.FogEnd = 100000
-    elseif timeType == "Night" then 
-        Lighting.ClockTime = 0 Lighting.GeographicLatitude = 0
-        Lighting.FogColor = Color3.fromRGB(0, 0, 0)
-        Lighting.FogEnd = 999999
-        Lighting.Ambient = Color3.fromRGB(30, 30, 35)
-        Lighting.OutdoorAmbient = Color3.fromRGB(15, 15, 20)
-        local bloom = Lighting:FindFirstChildOfClass("BloomEffect") if bloom then bloom.Enabled = false end
-        local blur = Lighting:FindFirstChildOfClass("BlurEffect") if blur then blur.Enabled = false end
-    end
-end
-
-DayBtn.MouseButton1Click:Connect(function() setLocalSky("Day") end)
-NightBtn.MouseButton1Click:Connect(function() setLocalSky("Night") end)
-DefaultTimeBtn.MouseButton1Click:Connect(function() setLocalSky("Default") end)
+DayBtn.MouseButton1Click:Connect(function() _G.LocalVisualTime = "Day" end)
+NightBtn.MouseButton1Click:Connect(function() _G.LocalVisualTime = "Night" end)
+DefaultTimeBtn.MouseButton1Click:Connect(function() _G.LocalVisualTime = "Default" end)
 
 CheatsTabBtn.MouseButton1Click:Connect(function() CheatsFrame.Visible, VisualFrame.Visible, SettingsFrame.Visible = true, false, false end)
 VisualTabBtn.MouseButton1Click:Connect(function() CheatsFrame.Visible, VisualFrame.Visible, SettingsFrame.Visible = false, true, false end)
 SettingsTabBtn.MouseButton1Click:Connect(function() CheatsFrame.Visible, VisualFrame.Visible, SettingsFrame.Visible = false, false, true end)
 
--- ЦИКЛ КЛІЄНТСЬКОГО ФРИЗУ ЧАСУ ТА ЗАХИСТУ ВІД БЛИМАННЯ
+-- ОПТИМІЗОВАНИЙ ЛОКАЛЬНИЙ ФРИЗ ЧАСУ (БЕЗ ЛАГІВ ТА ВИДАЛЕННЯ НЕБА)
 task.spawn(function()
-    while task.wait(0.01) do
-        if _G.LocalVisualTime == "Day" then 
-            Lighting.ClockTime = 14
-        elseif _G.LocalVisualTime == "Night" then 
-            Lighting.ClockTime = 0
-            Lighting.Brightness = 0
-            Lighting.ExposureCompensation = -0.5
-        end
+    while task.wait(0.05) do
+        if _G.LocalVisualTime == "Day" then Lighting.ClockTime = 14
+        elseif _G.LocalVisualTime == "Night" then Lighting.ClockTime = 0 end
     end
 end)
 
@@ -182,7 +159,7 @@ local function getClosestChest()
         end
     end return closest
 end
--- ЦИКЛ АВТОФАРМУ СКРИНЬ (Працює у всіх морях)
+-- АВТОФАРМ СКРИНЬ (ПЛАВНИЙ ЦИКЛ БЕЗ КІКІВ)
 task.spawn(function()
     while ScreenGui.Parent do
         task.wait(0.1)
@@ -209,65 +186,35 @@ task.spawn(function()
         end
     end
 end)
-
 -- КОНТРОЛЕР ПЛАВНОГО ПОЛЬОТУ
 task.spawn(function()
-    local flyBV, flyBG 
-    local UIS = game:GetService("UserInputService")
+    local flyBV, flyBG local UIS = game:GetService("UserInputService")
     while ScreenGui.Parent do
-        task.wait() 
-        local Character = Player.Character 
-        local Root = Character and Character:FindFirstChild("HumanoidRootPart") 
-        local Humanoid = Character and Character:FindFirstChild("Humanoid") 
-        local Camera = workspace.CurrentCamera
-        
+        task.wait() local Character = Player.Character local Root = Character and Character:FindFirstChild("HumanoidRootPart") local Humanoid = Character and Character:FindFirstChild("Humanoid") local Camera = workspace.CurrentCamera
         if _G.FlyMode and Root and Humanoid and Camera then
-            if not flyBV then 
-                flyBV = Instance.new("BodyVelocity", Root) 
-                flyBV.Name = "XenoFlyVelocity" 
-                flyBV.MaxForce = Vector3.new(9e9, 9e9, 9e9) 
-                flyBG = Instance.new("BodyGyro", Root) 
-                flyBG.Name = "XenoFlyGyro" 
-                flyBG.MaxTorque = Vector3.new(9e9, 9e9, 9e9) 
-            end
-            
-            flyBG.CFrame = Camera.CFrame 
-            local direction = Humanoid.MoveDirection 
-            local velocity = direction * _G.FlySpeed
-            
-            if UIS:IsKeyDown(Enum.KeyCode.Space) then 
-                velocity = velocity + Vector3.new(0, _G.FlySpeed, 0) 
-            elseif UIS:IsKeyDown(Enum.KeyCode.LeftShift) then 
-                velocity = velocity + Vector3.new(0, -_G.FlySpeed, 0) 
-            end
-            
-            if direction.Magnitude == 0 and not UIS:IsKeyDown(Enum.KeyCode.Space) and not UIS:IsKeyDown(Enum.KeyCode.LeftShift) then 
-                flyBV.Velocity = Vector3.new(0, 0.1, 0) 
-            else 
-                flyBV.Velocity = velocity 
-            end
-        else 
-            if flyBV then flyBV:Destroy() flyBV = nil end 
-            if flyBG then flyBG:Destroy() flyBG = nil end 
-        end
+            if not flyBV then flyBV = Instance.new("BodyVelocity", Root) flyBV.Name = "XenoFlyVelocity" flyBV.MaxForce = Vector3.new(9e9, 9e9, 9e9) flyBG = Instance.new("BodyGyro", Root) flyBG.Name = "XenoFlyGyro" flyBG.MaxTorque = Vector3.new(9e9, 9e9, 9e9) end
+            flyBG.CFrame = Camera.CFrame local direction = Humanoid.MoveDirection local velocity = direction * _G.FlySpeed
+            if UIS:IsKeyDown(Enum.KeyCode.Space) then velocity = velocity + Vector3.new(0, _G.FlySpeed, 0) elseif UIS:IsKeyDown(Enum.KeyCode.LeftShift) then velocity = velocity + Vector3.new(0, -_G.FlySpeed, 0) end
+            if direction.Magnitude == 0 and not UIS:IsKeyDown(Enum.KeyCode.Space) and not UIS:IsKeyDown(Enum.KeyCode.LeftShift) then flyBV.Velocity = Vector3.new(0, 0.1, 0) else flyBV.Velocity = velocity end
+        else if flyBV then flyBV:Destroy() flyBV = nil end if flyBG then flyBG:Destroy() flyBG = nil end end
     end
 end)
--- ЦИКЛ FRUIT ESP (НОВИЙ ДЕТЕКТОР ФРУКТІВ)
+-- ОПТИМІЗОВАНИЙ FRUIT ESP (БЕЗ ЛАГІВ ТА СТРИБКІВ ФПС)
 FruitEspBtn.MouseButton1Click:Connect(function() 
     _G.FruitEsp = not _G.FruitEsp 
     FruitEspBtn.Text = "🍓 Fruit Detector: " .. (_G.FruitEsp and "ON" or "OFF") 
 end)
 
 task.spawn(function()
-    while task.wait(1) do
+    while task.wait(1.5) do
         if _G.FruitEsp then
             for _, v in pairs(workspace:GetChildren()) do
-                if (v:IsA("Model") or v:IsA("Tool")) and (string.find(v.Name, "Fruit") or v:FindFirstChild("Fruit") or string.find(string.lower(v.Name), "fruit")) then
-                    local targetPart = v:FindFirstChild("Handle") or v:FindFirstChildOfClass("MeshPart") or v:FindFirstChildOfClass("Part")
-                    if targetPart and not targetPart:FindFirstChild("FruitXenoBillboard") then
-                        local b = Instance.new("BillboardGui", targetPart) b.Name = "FruitXenoBillboard" b.Size = UDim2.new(0, 120, 0, 40) b.AlwaysOnTop = true b.ExtentsOffset = Vector3.new(0, 3, 0)
-                        local t = Instance.new("TextLabel", b) t.Size = UDim2.new(1, 0, 1, 0) t.Text = "🍓 [ ФРУКТ НА ЗЕМЛІ ]" t.TextColor3 = Color3.fromRGB(255, 0, 100) t.BackgroundTransparency = 1 t.TextSize = 13 t.Font = Enum.Font.SourceSansBold
-                        local selection = Instance.new("BoxHandleAdornment", targetPart) selection.Name = "FruitXenoGlow" selection.Size = targetPart.Size + Vector3.new(0.5, 0.5, 0.5) selection.Color3 = Color3.fromRGB(255, 0, 100) selection.AlwaysOnTop = true selection.ZIndex = 4 selection.Adornee = targetPart
+                if (v:IsA("Model") or v:IsA("Tool")) and (string.find(v.Name, "Fruit") or string.find(string.lower(v.Name), "fruit")) then
+                    local p = v:FindFirstChild("Handle") or v:FindFirstChildOfClass("MeshPart") or v:FindFirstChildOfClass("Part")
+                    if p and not p:FindFirstChild("FruitXenoBillboard") then
+                        local b = Instance.new("BillboardGui", p) b.Name = "FruitXenoBillboard" b.Size = UDim2.new(0, 120, 0, 40) b.AlwaysOnTop = true b.ExtentsOffset = Vector3.new(0, 3, 0)
+                        local t = Instance.new("TextLabel", b) t.Size = UDim2.new(1, 0, 1, 0) t.Text = "🍓 [ФРУКТ НА ЗЕМЛІ]" t.TextColor3 = Color3.fromRGB(255, 0, 100) t.BackgroundTransparency = 1 t.TextSize = 13 t.Font = Enum.Font.SourceSansBold
+                        local s = Instance.new("BoxHandleAdornment", p) s.Name = "FruitXenoGlow" s.Size = p.Size + Vector3.new(0.5, 0.5, 0.5) s.Color3 = Color3.fromRGB(255, 0, 100) s.AlwaysOnTop = true s.ZIndex = 4 s.Adornee = p
                     end
                 end
             end
@@ -276,14 +223,58 @@ task.spawn(function()
         end
     end
 end)
+-- ОБРОБНИКИ НАЛАШТУВАНЬ ТА АКТИВАЦІЇ КНОПОК МЕНЮ
+SetSpeedBtn.MouseButton1Click:Connect(function() 
+    local num = tonumber(SpeedInput.Text) 
+    if num then 
+        _G.FlySpeed = num 
+        SetSpeedBtn.Text = "ОК!" 
+        task.wait(0.7) 
+        SetSpeedBtn.Text = "Зберегти" 
+    else 
+        SpeedInput.Text = "Помилка" 
+    end 
+end)
 
--- ОБРОБНИКИ КНОПОК ТА ЗАКРИТТЯ СЦЕНАРИЮ
-SetSpeedBtn.MouseButton1Click:Connect(function() local num = tonumber(SpeedInput.Text) if num then _G.FlySpeed = num SetSpeedBtn.Text = "ОК!" task.wait(0.7) SetSpeedBtn.Text = "Зберегти" else SpeedInput.Text = "Помилка" end end)
-ChestBtn.MouseButton1Click:Connect(function() _G.ChestFarm = not _G.ChestFarm if _G.ChestFarm then _G.FlyMode = false FlyBtn.Text = "Fly Mode: OFF" end ChestBtn.Text = "Auto Chest: " .. (_G.ChestFarm and "ON" or "OFF") if not _G.ChestFarm then stopMovement() end end)
-LevelBtn.MouseButton1Click:Connect(function() print("Кнопка Auto Level зараз відключена") end) -- Заглушка, щоб гра не вилітала
-FlyBtn.MouseButton1Click:Connect(function() _G.FlyMode = not _G.FlyMode if _G.FlyMode then _G.ChestFarm = false ChestBtn.Text = "Auto Chest: OFF" stopMovement() end FlyBtn.Text = "Fly Mode: " .. (_G.FlyMode and "ON" or "OFF") end)
+ChestBtn.MouseButton1Click:Connect(function() 
+    _G.ChestFarm = not _G.ChestFarm 
+    if _G.ChestFarm then 
+        _G.FlyMode = false 
+        FlyBtn.Text = "Fly Mode: OFF" 
+    end 
+    ChestBtn.Text = "Auto Chest: " .. (_G.ChestFarm and "ON" or "OFF") 
+    if not _G.ChestFarm then stopMovement() end 
+end)
+
+LevelBtn.MouseButton1Click:Connect(function() 
+    print("Автофарм рівня відключено за запитом розробника") 
+end)
+
+FlyBtn.MouseButton1Click:Connect(function() 
+    _G.FlyMode = not _G.FlyMode 
+    if _G.FlyMode then 
+        _G.ChestFarm = false 
+        ChestBtn.Text = "Auto Chest: OFF" 
+        stopMovement() 
+    end 
+    FlyBtn.Text = "Fly Mode: " .. (_G.FlyMode and "ON" or "OFF") 
+end)
 
 ExitBtn.MouseButton1Click:Connect(function()
-    _G.ChestFarm = false _G.FlyMode = false _G.LocalVisualTime = "Default" _G.FruitEsp = false stopMovement() for _, v in pairs(workspace:GetDescendants()) do if v.Name == "FruitXenoBillboard" or v.Name == "FruitXenoGlow" then v:Destroy() end end local Root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if Root then if Root:FindFirstChild("XenoFlyVelocity") then Root.XenoFlyVelocity:Destroy() end if Root:FindFirstChild("XenoFlyGyro") then Root.XenoFlyGyro:Destroy() end end ScreenGui:Destroy()
+    _G.ChestFarm = false 
+    _G.FlyMode = false 
+    _G.LocalVisualTime = "Default" 
+    _G.FruitEsp = false 
+    stopMovement() 
+    for _, v in pairs(workspace:GetDescendants()) do 
+        if v.Name == "FruitXenoBillboard" or v.Name == "FruitXenoGlow" then 
+            v:Destroy() 
+        end 
+    end 
+    local Root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if Root then 
+        if Root:FindFirstChild("XenoFlyVelocity") then Root.XenoFlyVelocity:Destroy() end 
+        if Root:FindFirstChild("XenoFlyGyro") then Root.XenoFlyGyro:Destroy() end 
+    end 
+    ScreenGui:Destroy()
 end)
